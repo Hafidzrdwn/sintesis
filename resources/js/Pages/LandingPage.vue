@@ -7,6 +7,7 @@ import JobCard from '@/Components/Landing/JobCard.vue';
 import ProcessStepCard from '@/Components/Landing/ProcessStepCard.vue';
 import TestimonialCard from '@/Components/Landing/TestimonialCard.vue';
 import StatItem from '@/Components/Landing/StatItem.vue';
+import { onMounted } from 'vue';
 
 // Data for dynamic rendering
 const stats = [
@@ -95,6 +96,19 @@ const testimonials = [
         stars: 4.5
     }
 ];
+
+onMounted(() => {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.reveal-on-scroll').forEach(el => observer.observe(el));
+});
 </script>
 
 <template>
@@ -105,8 +119,8 @@ const testimonials = [
         <section class="relative pt-16 pb-20 lg:pt-24 lg:pb-32 overflow-hidden bg-white">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
-                    <div class="flex-1 text-center lg:text-left">
-                        <div class="inline-flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-full px-4 py-1.5 mb-6">
+                    <div class="flex-1 text-center lg:text-left reveal-on-scroll">
+                        <div class="inline-flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-full px-4 py-1.5 mb-6 hover:bg-slate-100 transition-colors cursor-default">
                             <span class="relative flex h-2.5 w-2.5">
                                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                                 <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
@@ -120,17 +134,18 @@ const testimonials = [
                             Portal resmi SINTESIS untuk manajemen program magang, monitoring produktivitas, dan pengembangan talenta di lingkungan PT Inosoft Trans Sistem.
                         </p>
                         <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                            <PrimaryButton href="#lowongan" class="h-12 px-8 text-base">Lihat Lowongan</PrimaryButton>
-                            <a href="#cara-kerja" class="inline-flex items-center justify-center h-12 px-8 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-base font-bold rounded-lg transition-all">
+                            <PrimaryButton href="#lowongan" class="h-12 px-8 text-base transform hover:-translate-y-1 transition-transform">Lihat Lowongan</PrimaryButton>
+                            <a href="#cara-kerja" class="inline-flex items-center justify-center h-12 px-8 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-base font-bold rounded-lg transition-all transform hover:-translate-y-1">
                                 Alur Pendaftaran
                             </a>
                         </div>
                     </div>
-                    <div class="flex-1 w-full max-w-[600px] lg:max-w-none">
-                        <div class="relative rounded-2xl overflow-hidden shadow-2xl bg-slate-100 border border-slate-200 aspect-[4/3]">
-                            <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAi_BGranDaaqyuhvmTMeo_Hvn6QTUy6e_C60-q74zansHV_9hgtNieckd2afm5MSQ5sY_Plrrq3wVS8hfrv6m5fpmPcrVKUKu1WfA1H2E0NAB8G8moesMfQybjuDBoOcsAhAJZ0-4GlxLA8xTQPIbEo-5olKDJpgnX1DYQBmpATND-QgxtpOhd0yHYW60dUv9lzSncFj_9i47t-yVMgNLrRfweXvv9u6SXSKdBQGxQbhCedILwwDCG199j-keEj0ZwVtgssEhM4jDx');"></div>
+                    <div class="flex-1 w-full max-w-[600px] lg:max-w-none reveal-on-scroll stagger-2">
+                        <div class="relative rounded-2xl overflow-hidden shadow-2xl bg-slate-100 border border-slate-200 aspect-[4/3] group cursor-pointer">
+                            <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAi_BGranDaaqyuhvmTMeo_Hvn6QTUy6e_C60-q74zansHV_9hgtNieckd2afm5MSQ5sY_Plrrq3wVS8hfrv6m5fpmPcrVKUKu1WfA1H2E0NAB8G8moesMfQybjuDBoOcsAhAJZ0-4GlxLA8xTQPIbEo-5olKDJpgnX1DYQBmpATND-QgxtpOhd0yHYW60dUv9lzSncFj_9i47t-yVMgNLrRfweXvv9u6SXSKdBQGxQbhCedILwwDCG199j-keEj0ZwVtgssEhM4jDx');"></div>
                             <div class="absolute inset-0 bg-gradient-to-tr from-slate-900/40 to-transparent"></div>
-                            <div class="absolute bottom-6 left-6 bg-white/95 backdrop-blur-sm p-4 rounded-xl shadow-lg border border-slate-100 flex items-center gap-4 max-w-xs">
+                            <!-- Floating Card Animation -->
+                            <div class="absolute bottom-6 left-6 bg-white/95 backdrop-blur-sm p-4 rounded-xl shadow-lg border border-slate-100 flex items-center gap-4 max-w-xs animate-[float_6s_ease-in-out_infinite]">
                                 <div class="bg-blue-50 p-3 rounded-lg text-primary">
                                     <span class="material-symbols-outlined">analytics</span>
                                 </div>
@@ -157,17 +172,22 @@ const testimonials = [
         <!-- Cara Kerja Section -->
         <section class="py-20 lg:py-28 bg-white" id="cara-kerja">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <SectionHeader 
-                    title="Alur Pendaftaran" 
-                    subtitle="Proses seleksi transparan untuk calon talenta Inosoft." 
-                />
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                    <ProcessStepCard 
-                        v-for="step in steps" 
-                        :key="step.number"
-                        v-bind="step"
+                <div class="reveal-on-scroll">
+                    <SectionHeader 
+                        title="Alur Pendaftaran" 
+                        subtitle="Proses seleksi transparan untuk calon talenta Inosoft." 
                     />
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mt-12">
+                    <div 
+                        v-for="(step, index) in steps" 
+                        :key="step.number" 
+                        class="reveal-on-scroll" 
+                        :class="`stagger-${index + 1}`"
+                    >
+                        <ProcessStepCard v-bind="step" />
+                    </div>
                 </div>
             </div>
         </section>
@@ -175,7 +195,7 @@ const testimonials = [
         <!-- Lowongan Section -->
         <section class="py-20 lg:py-28 bg-slate-50 border-t border-slate-200" id="lowongan">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex flex-col md:flex-row items-end justify-between gap-6 mb-12">
+                <div class="flex flex-col md:flex-row items-end justify-between gap-6 mb-12 reveal-on-scroll">
                     <div>
                         <h2 class="text-3xl md:text-4xl font-bold text-slate-900">Lowongan Tersedia</h2>
                         <p class="mt-3 text-slate-600">Bergabung dengan tim Inosoft Trans Sistem.</p>
@@ -183,11 +203,14 @@ const testimonials = [
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <JobCard 
-                        v-for="job in jobs" 
+                    <div 
+                        v-for="(job, index) in jobs" 
                         :key="job.title" 
-                        v-bind="job"
-                    />
+                        class="reveal-on-scroll" 
+                        :class="`stagger-${index + 1}`"
+                    >
+                        <JobCard v-bind="job" />
+                    </div>
                 </div>
             </div>
         </section>
@@ -195,17 +218,22 @@ const testimonials = [
         <!-- Testimonials Section -->
         <section class="py-20 lg:py-28 bg-white" id="testimoni">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <SectionHeader 
-                    title="Pengalaman Alumni" 
-                    subtitle="Apa kata mereka tentang magang di Inosoft Trans Sistem." 
-                />
-
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <TestimonialCard 
-                        v-for="testimonial in testimonials" 
-                        :key="testimonial.name"
-                        v-bind="testimonial"
+                <div class="reveal-on-scroll">
+                    <SectionHeader 
+                        title="Pengalaman Alumni" 
+                        subtitle="Apa kata mereka tentang magang di Inosoft Trans Sistem." 
                     />
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
+                    <div 
+                        v-for="(testimonial, index) in testimonials" 
+                        :key="testimonial.name" 
+                        class="reveal-on-scroll" 
+                        :class="`stagger-${index + 1}`"
+                    >
+                        <TestimonialCard v-bind="testimonial" />
+                    </div>
                 </div>
             </div>
         </section>
