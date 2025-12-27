@@ -21,6 +21,10 @@ Route::get('/intern-dashboard', function () {
     return Inertia::render('InternDashboard');
 })->middleware(['auth', 'verified'])->name('intern.dashboard');
 
+Route::get('/internship/apply', function () {
+    return Inertia::render('InternshipApplication');
+})->middleware(['auth', 'verified'])->name('internship.apply');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
