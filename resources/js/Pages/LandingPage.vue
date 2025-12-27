@@ -50,7 +50,8 @@ const jobs = [
         status: 'Terbuka',
         description: 'Menganalisis dataset internal untuk mendapatkan wawasan bisnis. Bekerja langsung dengan data warehouse Inosoft menggunakan SQL dan Python.',
         updatedAt: '2 hari lalu',
-        image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB3k1fvEBE1Nku2nHA0XdWpezFtnAU_3jOROOYFVuVRqi82j9PaCf8DNVRMTlhcbpnhPJIwtFEY5rTMJpZDtz53BZ0AQyptx6k3ht5BnStahuZHrOVWq3Miova1QzSxbotS0De58O1d4Jq2xVBa-nVcz8OeHSWuAtsSRW6BT4dDOkqIMEVyBl5a2B7-rIpLPxidU8ulrjGidi9AUefGyH1vbEAtw2w7d9T8FA_QrkmFEL_HF4DsFHk1id7AaWEDM-Ptl-q2pgT9Ltb-'
+        image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB3k1fvEBE1Nku2nHA0XdWpezFtnAU_3jOROOYFVuVRqi82j9PaCf8DNVRMTlhcbpnhPJIwtFEY5rTMJpZDtz53BZ0AQyptx6k3ht5BnStahuZHrOVWq3Miova1QzSxbotS0De58O1d4Jq2xVBa-nVcz8OeHSWuAtsSRW6BT4dDOkqIMEVyBl5a2B7-rIpLPxidU8ulrjGidi9AUefGyH1vbEAtw2w7d9T8FA_QrkmFEL_HF4DsFHk1id7AaWEDM-Ptl-q2pgT9Ltb-',
+        href: '/lowongan/detail'
     },
     {
         title: 'Magang UI/UX Design',
@@ -58,7 +59,8 @@ const jobs = [
         status: 'Terbuka',
         description: 'Merancang antarmuka aplikasi internal SINTESIS yang intuitif. Berkolaborasi dengan developer untuk mengimplementasikan design system perusahaan.',
         updatedAt: '5 hari lalu',
-        image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuACtT8JbF6Dkg_H5N1rMwbN9qhTOr2pDuQxV7wIPVe5u5oGtGsBTw6LSugZi35iizpdnmPV8Nz1ABBKYWr-2QYlF4-L1R56OQWtSnJb3Ff6LLY15Rrt-8VOGs_OwJn9FEOxPTHOoIRn9Jjch640r2WfRuzq3BQVNGWkraqFBlXiVmcB8YzhYITTILkTFk6EdjGerzx6kLfhjPCi4NbuPI7jfqatQHX7TteN7qMFoGS7q7eB-UuG91Di44wRDh3JgW0-_gMqJelRk6hK'
+        image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuACtT8JbF6Dkg_H5N1rMwbN9qhTOr2pDuQxV7wIPVe5u5oGtGsBTw6LSugZi35iizpdnmPV8Nz1ABBKYWr-2QYlF4-L1R56OQWtSnJb3Ff6LLY15Rrt-8VOGs_OwJn9FEOxPTHOoIRn9Jjch640r2WfRuzq3BQVNGWkraqFBlXiVmcB8YzhYITTILkTFk6EdjGerzx6kLfhjPCi4NbuPI7jfqatQHX7TteN7qMFoGS7q7eB-UuG91Di44wRDh3JgW0-_gMqJelRk6hK',
+        href: '/lowongan/detail'
     },
     {
         title: 'Magang Backend Developer',
@@ -76,7 +78,7 @@ const testimonials = [
         role: 'Ex-Data Analyst Intern',
         quote: 'Platform SINTESIS sangat membantu saya dalam mengatur tugas harian. Budaya kerja di Inosoft sangat suportif.',
         initial: 'A',
-        stars: 5
+        stars: 4.8
     },
     {
         name: 'Siti Nurhaliza',
@@ -97,7 +99,7 @@ const testimonials = [
 
 <template>
     <LandingLayout>
-        <Head title="SINTESIS - Portal Magang Inosoft" />
+        <Head title="Portal Magang Inosoft" />
 
         <!-- Hero Section -->
         <section class="relative pt-16 pb-20 lg:pt-24 lg:pb-32 overflow-hidden bg-white">

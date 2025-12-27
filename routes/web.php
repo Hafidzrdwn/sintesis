@@ -9,6 +9,10 @@ Route::get('/', function () {
     return Inertia::render('LandingPage');
 });
 
+Route::get('/lowongan/detail', function () {
+    return Inertia::render('JobDetailPage');
+})->name('job.detail');
+
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
