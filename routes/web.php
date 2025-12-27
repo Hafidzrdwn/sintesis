@@ -14,7 +14,7 @@ Route::get('/lowongan/detail', function () {
 })->name('job.detail');
 
 Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
+    return Inertia::render('CandidateDashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
