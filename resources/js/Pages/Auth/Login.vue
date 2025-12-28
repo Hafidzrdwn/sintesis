@@ -1,8 +1,8 @@
 <script setup>
 import BaseButton from '@/Components/BaseButton.vue';
 import AuthLayout from '@/Layouts/AuthLayout.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
+import { ref, computed } from 'vue';
 
 defineProps({
     canResetPassword: {
@@ -12,6 +12,9 @@ defineProps({
         type: String,
     },
 });
+
+const page = usePage();
+const flash = computed(() => page.props.flash);
 
 const form = useForm({
     email: '',
@@ -39,6 +42,14 @@ defineOptions({ layout: AuthLayout })
         <h3 class="text-2xl font-bold leading-tight text-slate-900">Selamat Datang Kembali</h3>
         <p class="text-slate-500 text-[15px] leading-normal">Masuk untuk mengelola presensi dan
             tugas magang.</p>
+    </div>
+
+    <!-- Flash Messages -->
+    <div v-if="flash?.error" class="mb-4 rounded-lg bg-red-50 p-4 text-sm text-red-600 border border-red-200">
+        {{ flash.error }}
+    </div>
+    <div v-if="flash?.success" class="mb-4 rounded-lg bg-green-50 p-4 text-sm text-green-600 border border-green-200">
+        {{ flash.success }}
     </div>
 
     <div v-if="status" class="mb-4 text-sm font-medium text-green-600 text-center">
@@ -103,8 +114,7 @@ defineOptions({ layout: AuthLayout })
         </div>
     </div>
 
-    <BaseButton type="button" variant="outlineSecondary" size="lg" :loading="form.processing"
-        :disabled="form.processing">
+    <BaseButton :href="route('auth.google.login')" external variant="outlineSecondary" size="lg">
         <svg class="h-5 w-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"

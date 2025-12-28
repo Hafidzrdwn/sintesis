@@ -36,6 +36,10 @@ const handleNavClick = (e, href) => {
     }
 };
 
+const handleLogout = () => {
+    router.post(route('logout'));
+};
+
 const isProfileOpen = ref(false);
 
 const closeDropdown = (e) => {
@@ -120,8 +124,13 @@ const user = computed(() => {
                         </transition>
                     </div>
 
-                    <BaseButton size="sm" :href="route('logout')" type="button" variant="outlineDanger" method="post"
-                        responsiveClass="hidden" class="md:inline-flex">
+                    <BaseButton 
+                        size="sm" 
+                        variant="outlineDanger" 
+                        @click="handleLogout"
+                        responsiveClass="hidden" 
+                        class="md:inline-flex"
+                    >
                         <span class="material-symbols-outlined">logout</span>
                         <span class="hidden sm:inline">Keluar</span>
                     </BaseButton>
@@ -173,8 +182,8 @@ const user = computed(() => {
                     Edit Profil
                 </Link>
                 <div class="pt-2">
-                    <BaseButton :href="route('logout')" method="post" rounded="full" variant="outlineDanger"
-                        type="button" full>
+                    <BaseButton @click="handleLogout" rounded="full" variant="outlineDanger"
+                        full>
                         <span class="material-symbols-outlined">logout</span>
                         <span class="inline">Keluar</span>
                     </BaseButton>

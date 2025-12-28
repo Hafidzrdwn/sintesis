@@ -1,8 +1,11 @@
 <script setup>
 import BaseButton from '@/Components/BaseButton.vue';
 import AuthLayout from '@/Layouts/AuthLayout.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
+import { ref, computed } from 'vue';
+
+const page = usePage();
+const flash = computed(() => page.props.flash);
 
 const form = useForm({
     name: '',
@@ -35,6 +38,14 @@ defineOptions({
         <p class="text-slate-500 text-sm font-normal leading-normal max-w-sm mx-auto">
             Bergabung dengan SINTESIS untuk manajemen magang, monitoring, dan analitik yang lebih baik.
         </p>
+    </div>
+
+    <!-- Flash Messages -->
+    <div v-if="flash?.error" class="mt-4 rounded-lg bg-red-50 p-4 text-sm text-red-600 border border-red-200">
+        {{ flash.error }}
+    </div>
+    <div v-if="flash?.success" class="mt-4 rounded-lg bg-green-50 p-4 text-sm text-green-600 border border-green-200">
+        {{ flash.success }}
     </div>
 
     <form @submit.prevent="submit" class="flex flex-col gap-5 mt-6">
@@ -126,8 +137,7 @@ defineOptions({
             </div>
         </div>
 
-        <BaseButton type="button" variant="outlineSecondary" size="lg" :loading="form.processing"
-            :disabled="form.processing">
+        <BaseButton :href="route('auth.google.register')" external variant="outlineSecondary" size="lg">
             <svg class="w-5 h-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path
                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"

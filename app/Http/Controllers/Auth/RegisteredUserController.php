@@ -44,16 +44,25 @@ class RegisteredUserController extends Controller
             'password_confirmation.same' => 'Konfirmasi kata sandi tidak sesuai.',
         ]);
 
+        // Create user
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => 'intern',
+            'status' => 'active',
         ]);
 
+        // Fire registered event (sends verification email)
         event(new Registered($user));
 
+        // Login the user
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        // Regenerate session
+        $request->session()->regenerate();
+
+        // Redirect to verify-email page
+        return redirect()->route('verification.notice');
     }
 }

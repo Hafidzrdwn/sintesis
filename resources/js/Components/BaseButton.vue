@@ -7,6 +7,18 @@ const props = defineProps({
         type: String,
         default: null,
     },
+    external: {
+        type: Boolean,
+        default: false, // If true, use native <a> instead of Inertia Link
+    },
+    method: {
+        type: String,
+        default: 'get', // get | post | put | patch | delete (for Inertia Link)
+    },
+    as: {
+        type: String,
+        default: null, // 'button' for POST links (for Inertia Link)
+    },
     type: {
         type: String,
         default: 'button', // button | submit | reset
@@ -95,16 +107,32 @@ const finalClass = computed(() => [
 
 const componentBehavior = computed(() => {
     if (props.href) {
-        return (props.href.includes('#')) ? 'a' : Link
+        // Use native <a> for external links or anchor links
+        if (props.external || props.href.includes('#')) {
+            return 'a'
+        }
+        return Link
     } else {
         return 'button'
     }
+})
+
+// Determine if we need as="button" for non-GET Inertia links
+const linkAs = computed(() => {
+    if (props.as) return props.as
+    // Auto-set as="button" for POST/PUT/PATCH/DELETE methods
+    if (props.method && props.method.toLowerCase() !== 'get') {
+        return 'button'
+    }
+    return undefined
 })
 
 </script>
 
 <template>
     <component :is="componentBehavior" :href="href" :type="!href ? type : undefined"
+        :method="href && !external ? method : undefined"
+        :as="href && !external ? linkAs : undefined"
         :disabled="disabled || loading" :class="finalClass">
         <!-- Loading state -->
         <span v-if="loading" class="animate-spin">
@@ -118,3 +146,4 @@ const componentBehavior = computed(() => {
         <slot v-else />
     </component>
 </template>
+
