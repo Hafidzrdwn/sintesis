@@ -1,14 +1,12 @@
 <script setup>
-import InternLayout from '@/Layouts/InternLayout.vue';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
 import { onMounted, ref } from 'vue';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import AttendanceCard from '@/Components/AttendanceCard.vue'; // New Import
 
-defineOptions({ layout: InternLayout });
+defineOptions({ layout: AuthenticatedLayout });
 
 const mapContainer = ref(null);
-// ... existing onMounted ...
 onMounted(() => {
     if (mapContainer.value) {
         const map = L.map(mapContainer.value).setView([-6.2088, 106.8456], 13); // Jakarta Coordinates
@@ -50,53 +48,11 @@ onMounted(() => {
     </div>
 
     <!-- Attendance Section -->
-    <section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-        <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-bold flex items-center gap-2 text-text-main">
-                <span class="material-symbols-outlined text-primary">pin_drop</span>
-                Absensi Kehadiran
-            </h2>
-            <span class="text-xs font-mono bg-slate-100 px-3 py-1 rounded-full text-text-secondary border border-slate-200">GPS: Akurasi ±5m</span>
-        </div>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Map -->
-            <div class="relative group overflow-hidden rounded-xl h-64 lg:h-80 w-full bg-slate-100 border border-slate-200">
-                <div ref="mapContainer" class="absolute inset-0 z-0"></div>
-                
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent flex items-end p-4 pointer-events-none z-10">
-                    <div class="bg-white/95 backdrop-blur-sm p-3 rounded-lg flex items-center gap-3 shadow-lg border border-slate-100 pointer-events-auto">
-                        <span class="material-symbols-outlined text-primary">apartment</span>
-                        <div>
-                            <p class="text-[10px] font-bold uppercase text-text-secondary">Zona Saat Ini</p>
-                            <p class="text-sm font-bold text-slate-900">Kantor Pusat, Menara A</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Camera / Action -->
-            <div class="flex flex-col gap-4 h-full">
-                <div class="relative flex-1 bg-slate-800 rounded-xl overflow-hidden min-h-[200px] flex items-center justify-center group border border-slate-200">
-                        <!-- Camera Placeholder -->
-                    <div class="absolute inset-0 bg-slate-700 flex items-center justify-center">
-                            <span class="material-symbols-outlined text-slate-500 text-6xl">photo_camera</span>
-                    </div>
-                    <div class="absolute inset-0 flex items-center justify-center">
-                        <div class="border-2 border-white/40 w-24 h-24 rounded-full flex items-center justify-center backdrop-blur-sm bg-white/10">
-                            <span class="material-symbols-outlined text-white text-4xl">photo_camera</span>
-                        </div>
-                    </div>
-                    <div class="absolute top-4 right-4 bg-danger text-white text-[10px] font-bold px-2 py-1 rounded animate-pulse">LANGSUNG</div>
-                </div>
-                <button class="w-full py-4 bg-success hover:bg-[#059669] text-white rounded-xl font-bold text-lg shadow-lg shadow-success/20 transition-all active:scale-95 flex items-center justify-center gap-3 group/btn cursor-pointer">
-                    <span class="bg-white/20 rounded-full p-1 group-hover/btn:rotate-12 transition-transform">
-                        <span class="material-symbols-outlined block">fingerprint</span>
-                    </span>
-                    Masuk Sekarang - 08:58
-                </button>
-            </div>
-        </div>
-    </section>
+    <AttendanceCard 
+        office-name="PT Inosoft Trans Sistem"
+        :office-coordinates="[-7.3172337, 112.7888917]" 
+        :max-distance="100"
+    />
 
     <!-- Tasks and Logbook Grid -->
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">

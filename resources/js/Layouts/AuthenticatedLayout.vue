@@ -1,0 +1,197 @@
+<script setup>
+import { Link, usePage } from '@inertiajs/vue3';
+import { ref, computed } from 'vue';
+import { X } from 'lucide-vue-next';
+
+const showMobileMenu = ref(false);
+const page = usePage();
+const user = computed(() => page.props.auth.user);
+const userRole = computed(() => user.value.role || 'intern'); // Default to intern if undefined
+
+// Menu Configurations
+const menus = {
+    admin: [
+        { label: 'Dashboard', routeName: 'admin.dashboard', icon: 'dashboard', urlPrefix: '/admin/dashboard' },
+        { label: 'Rekrutmen', routeName: 'admin.recruitment', icon: 'group_add', urlPrefix: '/admin/recruitment' },
+        { label: 'Data User', routeName: 'admin.users', icon: 'manage_accounts', urlPrefix: '/admin/users' },
+        { label: 'Monitoring Global', routeName: 'admin.monitoring', icon: 'analytics', urlPrefix: '/admin/monitoring' },
+        { label: 'Audit Log', routeName: 'admin.audit', icon: 'security', urlPrefix: '/admin/audit' },
+    ],
+    mentor: [
+        { label: 'Dashboard', routeName: 'mentor.dashboard', icon: 'dashboard', urlPrefix: '/mentor/dashboard' },
+        { label: 'Manajemen Tugas', routeName: 'mentor.tasks', icon: 'task', urlPrefix: '/mentor/tasks' },
+        { label: 'Review Logbook', routeName: 'mentor.logbook', icon: 'rate_review', urlPrefix: '/mentor/logbook' },
+        { label: 'Penilaian Akhir', routeName: 'mentor.evaluation', icon: 'school', urlPrefix: '/mentor/evaluation' },
+    ],
+    intern: [
+        { label: 'Dashboard', routeName: 'intern.dashboard', icon: 'dashboard', urlPrefix: '/intern/dashboard' },
+        { label: 'Analitik', routeName: 'intern.analytics', icon: 'bar_chart', urlPrefix: '/intern/analytics' },
+        { label: 'Absensi', routeName: 'intern.attendance', icon: 'schedule', urlPrefix: '/intern/attendance' },
+        { label: 'Tugas Saya', routeName: 'intern.tasks', icon: 'assignment', urlPrefix: '/intern/tasks' },
+        { label: 'Buku Log', routeName: 'intern.logbook', icon: 'book', urlPrefix: '/intern/logbook' },
+    ]
+};
+
+const menuItems = computed(() => menus[userRole.value] || menus.intern);
+
+const roleLabel = computed(() => {
+    switch(userRole.value) {
+        case 'admin': return 'Administrator';
+        case 'mentor': return 'Mentor';
+        default: return 'Magang Desain UX'; // Dynamic based on position later?
+    }
+});
+
+const isActive = (prefix) => {
+    // Check for exact match for dashboard to prevent partial matching issues if other routes start with similar prefix
+    // But since prefixes are quite distinct (/intern/dashboard vs /intern/tasks), startsWith is generally safe.
+    // However, usually "Dashboard" is exact match or handled specifically if it's the root.
+    // For /intern/dashboard, startsWith is fine as long as no other route is /intern/dashboard-something
+    return page.url.startsWith(prefix);
+};
+</script>
+
+<template>
+    <div class="bg-background-light font-display text-text-main antialiased overflow-x-hidden">
+        <div class="relative flex h-screen w-full overflow-hidden">
+            
+            <!-- Mobile Sidebar Overlay & Drawer -->
+            <div v-if="showMobileMenu" class="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true">
+                <!-- Backdrop -->
+                <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" @click="showMobileMenu = false"></div>
+
+                <!-- Drawer -->
+                <div class="fixed inset-y-0 left-0 w-72 bg-white p-6 shadow-xl transform transition-transform duration-300 ease-in-out flex flex-col h-full border-r border-slate-200">
+                    <div class="flex items-center justify-between mb-8">
+                        <div class="font-bold text-xl text-primary tracking-tight">SINTESIS</div>
+                        <button @click="showMobileMenu = false" class="p-2 rounded-full hover:bg-slate-100 text-slate-500">
+                            <X class="w-6 h-6" />
+                        </button>
+                    </div>
+
+                    <!-- Mobile Navigation -->
+                    <div class="flex flex-col h-full justify-between overflow-y-auto">
+                        <div class="flex flex-col gap-6">
+                            <!-- User Profile Mobile -->
+                             <div class="flex items-center gap-4 px-2 p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                                <div class="bg-center bg-no-repeat bg-cover rounded-full size-10 ring-2 ring-white flex items-center justify-center bg-slate-200 text-slate-500 font-bold text-lg uppercase">
+                                    {{ user.name.charAt(0) }}
+                                </div>
+                                <div class="flex flex-col">
+                                    <h1 class="text-text-main text-sm font-bold leading-tight line-clamp-1">{{ user.name }}</h1>
+                                    <p class="text-text-secondary text-[10px] font-medium uppercase tracking-wide">{{ roleLabel }}</p>
+                                </div>
+                            </div>
+                            
+                            <nav class="flex flex-col gap-2">
+                                <Link 
+                                    v-for="item in menuItems"
+                                    :key="item.routeName"
+                                    :href="route(item.routeName)"
+                                    @click="showMobileMenu = false"
+                                    class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group"
+                                    :class="isActive(item.urlPrefix) ? 'bg-primary/10 text-primary font-bold ring-1 ring-primary/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'"
+                                >
+                                    <span class="material-symbols-outlined" :class="{ 'text-primary fill-current': isActive(item.urlPrefix) }">{{ item.icon }}</span>
+                                    <span class="text-sm">{{ item.label }}</span>
+                                </Link>
+                            </nav>
+                        </div>
+                        
+                        <div class="flex flex-col gap-2 border-t border-slate-100 pt-4">
+                            <Link :href="route('intern.settings')" 
+                                @click="showMobileMenu = false"
+                                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group"
+                                :class="isActive('/intern/settings') ? 'bg-primary/10 text-primary font-bold ring-1 ring-primary/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'"
+                            >
+                                <span class="material-symbols-outlined" :class="{ 'text-primary fill-current': isActive('/intern/settings') }">settings</span>
+                                <span class="text-sm">Pengaturan</span>
+                            </Link>
+                            <Link :href="route('logout')" method="post" as="button" class="flex items-center gap-3 px-4 py-3 rounded-xl text-danger hover:bg-red-50 transition-colors w-full text-left mt-1">
+                                <span class="material-symbols-outlined">logout</span>
+                                <span class="text-sm font-semibold">Keluar</span>
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar (Desktop) -->
+            <aside class="hidden lg:flex flex-col w-72 h-full bg-card-white border-r border-slate-200 p-6 flex-shrink-0 z-20 shadow-sm relative">
+                <div class="flex flex-col h-full justify-between">
+                    <div class="flex flex-col gap-8">
+                        <!-- User Profile -->
+                        <div class="flex items-center gap-4 px-2">
+                            <div class="bg-center bg-no-repeat bg-cover rounded-full size-12 ring-2 ring-slate-100 flex items-center justify-center bg-slate-200 text-slate-500 font-bold text-xl uppercase">
+                                {{ user.name.charAt(0) }}
+                            </div>
+                            <div class="flex flex-col">
+                                <h1 class="text-text-main text-base font-bold leading-tight line-clamp-1">{{ user.name }}</h1>
+                                <p class="text-text-secondary text-xs font-medium">{{ roleLabel }}</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Navigation -->
+                        <nav class="flex flex-col gap-2">
+                            <Link 
+                                v-for="item in menuItems"
+                                :key="item.routeName"
+                                :href="route(item.routeName)" 
+                                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group"
+                                :class="isActive(item.urlPrefix) ? 'bg-primary/10 text-primary font-bold ring-1 ring-primary/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'"
+                            >
+                                <span class="material-symbols-outlined" :class="{ 'text-primary fill-current': isActive(item.urlPrefix) }">{{ item.icon }}</span>
+                                <span class="text-sm">{{ item.label }}</span>
+                            </Link>
+                        </nav>
+                    </div>
+                    
+                    <!-- Bottom Actions -->
+                    <div class="flex flex-col gap-2 border-t border-slate-100 pt-4">
+                        <Link :href="route('intern.settings')" 
+                            class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group"
+                            :class="isActive('/intern/settings') ? 'bg-primary/10 text-primary font-bold ring-1 ring-primary/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'"
+                        >
+                            <span class="material-symbols-outlined" :class="{ 'text-primary fill-current': isActive('/intern/settings') }">settings</span>
+                            <span class="text-sm">Pengaturan</span>
+                        </Link>
+                        <Link :href="route('logout')" method="post" as="button" class="flex items-center gap-3 px-4 py-3 rounded-xl text-danger hover:bg-red-50 transition-colors w-full text-left mt-1">
+                            <span class="material-symbols-outlined">logout</span>
+                            <span class="text-sm font-semibold">Keluar</span>
+                        </Link>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content Area -->
+            <main class="flex-1 flex flex-col h-full overflow-y-auto relative z-10 bg-background-light">
+                <!-- Mobile Header -->
+                <div class="lg:hidden flex items-center justify-between p-4 bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+                    <div class="font-bold text-lg text-primary tracking-tight">SINTESIS</div>
+                    <button @click="showMobileMenu = !showMobileMenu" class="p-2 rounded-full hover:bg-slate-100 text-slate-600 transition-colors active:bg-slate-200">
+                        <span class="material-symbols-outlined">menu</span>
+                    </button>
+                </div>
+
+                <!-- Page Content -->
+                 <div class="layout-content-container flex flex-col max-w-[1200px] w-full mx-auto px-4 pt-4 pb-16 md:px-8 md:pt-8 gap-8 flex-1">
+                    <slot />
+                 </div>
+
+                 <!-- Footer -->
+                 <footer class="mt-auto border-t border-slate-200 bg-white py-6">
+                    <div class="max-w-[1200px] mx-auto px-4 md:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm">
+                        <div class="text-slate-500 font-medium">
+                            &copy; 2025 <span class="font-bold text-primary">SINTESIS</span>. All rights reserved.
+                        </div>
+                        <div class="flex items-center gap-6 text-slate-400">
+                            <a href="#" class="hover:text-primary transition-colors">Bantuan</a>
+                            <a href="#" class="hover:text-primary transition-colors">Privasi</a>
+                            <a href="#" class="hover:text-primary transition-colors">Syarat & Ketentuan</a>
+                        </div>
+                    </div>
+                 </footer>
+            </main>
+        </div>
+    </div>
+</template>
