@@ -1,9 +1,11 @@
 <script setup>
-import { ref } from 'vue';
-import { Link } from '@inertiajs/vue3';
-import PrimaryButton from './PrimaryButton.vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { usePage, router, Link } from '@inertiajs/vue3';
+import BaseButton from '@/Components/BaseButton.vue';
+import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 
 const isMobileMenuOpen = ref(false);
+const page = usePage();
 
 const toggleMobileMenu = () => {
     isMobileMenuOpen.value = !isMobileMenuOpen.value;
@@ -14,62 +16,168 @@ const navLinks = [
     { name: 'Cara Kerja', href: '#cara-kerja' },
     { name: 'Testimoni', href: '#testimoni' },
 ];
+
+const handleNavClick = (e, href) => {
+    isMobileMenuOpen.value = false;
+
+    if (href.startsWith('#')) {
+        e.preventDefault();
+
+        if (page.url === '/' || page.url.startsWith('/#')) {
+            const element = document.querySelector(href);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+                history.pushState(null, null, href);
+            }
+        }
+        else {
+            router.get('/' + href);
+        }
+    }
+};
+
+const isProfileOpen = ref(false);
+
+const closeDropdown = (e) => {
+    if (!e.target.closest('#profile-dropdown-container')) {
+        isProfileOpen.value = false;
+    }
+};
+
+onMounted(() => window.addEventListener('click', closeDropdown));
+onUnmounted(() => window.removeEventListener('click', closeDropdown));
+
+const isLoggedIn = computed(() => {
+    return !!page.props.auth.user;
+});
+
+const user = computed(() => {
+    return page.props.auth.user;
+});
 </script>
 
 <template>
     <nav class="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-sm border-b border-slate-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-20">
-                <!-- Logo -->
-                <Link class="flex items-center gap-3 group" href="/">
-                    <div class="size-9 text-primary group-hover:scale-105 transition-transform duration-300">
-                        <svg fill="currentColor" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M36.7273 44C33.9891 44 31.6043 39.8386 30.3636 33.69C29.123 39.8386 26.7382 44 24 44C21.2618 44 18.877 39.8386 17.6364 33.69C16.3957 39.8386 14.0109 44 11.2727 44C7.25611 44 4 35.0457 4 24C4 12.9543 7.25611 4 11.2727 4C14.0109 4 16.3957 8.16144 17.6364 14.31C18.877 8.16144 21.2618 4 24 4C26.7382 4 29.123 8.16144 30.3636 14.31C31.6043 8.16144 33.9891 4 36.7273 4C40.7439 4 44 12.9543 44 24C44 35.0457 40.7439 44 36.7273 44Z"></path>
-                        </svg>
-                    </div>
-                    <div class="flex flex-col">
-                        <h1 class="text-2xl font-black tracking-tight text-slate-900 leading-none">SINTESIS</h1>
-                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Inosoft Trans Sistem</span>
-                    </div>
-                </Link>
+                <ApplicationLogo />
 
                 <!-- Desktop Menu -->
-                <div class="hidden md:flex items-center gap-8">
-                    <Link 
-                        v-for="item in navLinks" 
-                        :key="item.name" 
-                        :href="item.href" 
-                        class="text-sm font-medium text-slate-600 hover:text-primary transition-colors"
-                    >
+                <div v-if="!isLoggedIn" class="hidden md:flex items-center gap-10">
+                    <a v-for="item in navLinks" :key="item.name" :href="item.href"
+                        @click="handleNavClick($event, item.href)"
+                        class="text-base font-medium text-slate-600 hover:text-primary transition-colors">
                         {{ item.name }}
-                    </Link>
-                    <PrimaryButton href="/login">Masuk</PrimaryButton>
+                    </a>
+                    <BaseButton rounded="full" href="/login">Masuk</BaseButton>
                 </div>
 
-                <!-- Mobile Menu Button -->
-                <button 
-                    class="md:hidden text-slate-600 hover:text-primary cursor-pointer"
-                    @click="toggleMobileMenu"
-                >
-                    <span class="material-symbols-outlined text-3xl">menu</span>
+                <div v-else class="flex items-center gap-5">
+                    <div id="profile-dropdown-container" class="relative">
+                        <button @click="isProfileOpen = !isProfileOpen"
+                            class="hidden md:flex items-center gap-1 pr-4 border-r border-gray-200 cursor-pointer hover:opacity-80 transition-opacity focus:outline-none">
+                            <div class="flex gap-3 items-center justify-center">
+                                <div class="text-right">
+                                    <p class="text-sm font-bold text-gray-900 leading-none">
+                                        {{ user.name }}
+                                    </p>
+                                    <p class="text-xs text-gray-500 mt-1">Calon Intern</p>
+                                </div>
+                                <div
+                                    class="h-10 w-10 rounded-full bg-primary/10 ring-2 ring-white shadow-sm flex items-center justify-center text-primary font-bold text-lg">
+                                    {{ user.name.charAt(0) }}
+                                </div>
+                            </div>
+                            <span class="material-symbols-outlined text-gray-400">keyboard_arrow_down</span>
+                        </button>
+
+                        <transition enter-active-class="transition ease-out duration-100"
+                            enter-from-class="transform opacity-0 scale-95"
+                            enter-to-class="transform opacity-100 scale-100"
+                            leave-active-class="transition ease-in duration-75"
+                            leave-from-class="transform opacity-100 scale-100"
+                            leave-to-class="transform opacity-0 scale-95">
+                            <div v-show="isProfileOpen"
+                                class="absolute right-5 mt-4 w-48 origin-top-right rounded-lg border border-primary/50 bg-white py-2 shadow-lg focus:outline-none z-50">
+                                <div class="px-4 py-2 border-b border-gray-50 md:hidden">
+                                    <p class="text-sm font-bold text-gray-900 truncate">{{ user.name }}
+                                    </p>
+                                    <p class="text-xs text-gray-500">Calon Intern</p>
+                                </div>
+
+                                <Link :href="route('dashboard')"
+                                    class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
+                                    :class="{ 'bg-primary text-white hover:bg-primary-hover': $page.url == '/dashboard' }">
+                                    <span class="material-symbols-outlined fill">dashboard</span>
+                                    Dashboard
+                                </Link>
+                                <Link :href="route('profile.edit')"
+                                    class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer">
+                                    <span class="material-symbols-outlined fill">person_edit</span>
+                                    Edit Profil
+                                </Link>
+                            </div>
+                        </transition>
+                    </div>
+
+                    <BaseButton size="sm" :href="route('logout')" type="button" variant="outlineDanger" method="post"
+                        responsiveClass="hidden" class="md:inline-flex">
+                        <span class="material-symbols-outlined">logout</span>
+                        <span class="hidden sm:inline">Keluar</span>
+                    </BaseButton>
+                </div>
+
+                <button class="md:hidden text-slate-600 hover:text-primary cursor-pointer" @click="toggleMobileMenu">
+                    <span class="material-symbols-outlined scale-125">
+                        {{ isMobileMenuOpen ? 'close' : 'menu' }}
+                    </span>
                 </button>
             </div>
         </div>
 
         <!-- Mobile Menu Dropdown -->
         <div v-show="isMobileMenuOpen" class="md:hidden border-t border-slate-200 bg-white">
-            <div class="px-4 py-4 space-y-4">
-                 <Link 
-                    v-for="item in navLinks" 
-                    :key="item.name" 
-                    :href="item.href" 
-                    class="block text-sm font-medium text-slate-600 hover:text-primary transition-colors"
-                    @click="isMobileMenuOpen = false"
-                >
+            <div v-if="!isLoggedIn" class="px-4 py-4 space-y-5">
+                <a v-for="item in navLinks" :key="item.name" :href="item.href"
+                    class="block text-base font-medium text-slate-600 hover:text-primary transition-colors"
+                    @click="handleNavClick($event, item.href)">
                     {{ item.name }}
+                </a>
+                <div class="pt-2">
+                    <BaseButton href="/login" rounded="full" full>Masuk</BaseButton>
+                </div>
+            </div>
+            <div v-else class="px-4 py-4 space-y-5">
+                <div class="flex gap-3 items-center justify-start">
+                    <div
+                        class="h-10 w-10 rounded-full bg-primary/10 ring-2 ring-white shadow-sm flex items-center justify-center text-primary font-bold text-lg">
+                        {{ user.name.charAt(0) }}
+                    </div>
+                    <div class="text-left">
+                        <p class="text-sm font-bold text-gray-900 leading-none">
+                            {{ user.name }}
+                        </p>
+                        <p class="text-xs text-gray-500 mt-1">Calon Intern</p>
+                    </div>
+                </div>
+                <Link :href="route('dashboard')"
+                    class="text-base font-medium block cursor-pointer transition-colors"
+                    :class="{
+                        'text-slate-600 hover:text-primary': $page.url != '/dashboard',
+                        'text-primary hover:text-primary-hover': $page.url == '/dashboard'
+                    }">
+                    Dashboard
+                </Link>
+                <Link :href="route('profile.edit')"
+                    class="text-base font-medium block cursor-pointer text-slate-600 hover:text-primary transition-colors">
+                    Edit Profil
                 </Link>
                 <div class="pt-2">
-                     <PrimaryButton href="/login" class="w-full">Masuk</PrimaryButton>
+                    <BaseButton :href="route('logout')" method="post" rounded="full" variant="outlineDanger"
+                        type="button" full>
+                        <span class="material-symbols-outlined">logout</span>
+                        <span class="inline">Keluar</span>
+                    </BaseButton>
                 </div>
             </div>
         </div>

@@ -11,7 +11,7 @@
     --font-display: 'Inter', 'Noto Sans', sans-serif;
     --font-body: 'Inter', 'Noto Sans', sans-serif;
 
-    --color-primary: #0b5daf;
+    --color-primary: #0b5cad;
     --color-primary-hover: #094b8a;
     --color-secondary: #f1f5f9;
     --color-background-light: #f1f5f9;
@@ -20,11 +20,9 @@
     --color-text-secondary: #64748B;
     --color-text-muted: #475569;
     --color-success: #10B981;
+    --color-success-hover: #0e9e6d;
     --color-danger: #EF4444;
-
-    --radius-lg: 1rem;
-    --radius-xl: 1.5rem;
-    --radius-2xl: 2rem;
+    --color-danger-hover: #dc2626;
 
     --animate-fade-in-up: fade-in-up 0.8s ease-out forwards;
     --animate-float: float 6s ease-in-out infinite;
@@ -52,6 +50,18 @@
             transform: translateY(-10px);
         }
     }
+}
+
+.material-symbols-outlined.fill {
+    font-variation-settings:
+        'FILL' 1,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+}
+
+html {
+    scroll-behavior: smooth;
 }
 
 /* Utility classes for intersection observer transitions */

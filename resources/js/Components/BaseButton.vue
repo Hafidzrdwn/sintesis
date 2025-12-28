@@ -19,6 +19,10 @@ const props = defineProps({
         type: String,
         default: 'md', // sm | md | lg
     },
+    rounded: {
+        type: String,
+        default: 'lg', // none | sm | md | lg | xl | full
+    },
     full: {
         type: Boolean,
         default: false,
@@ -31,69 +35,82 @@ const props = defineProps({
         type: Boolean,
         default: false,
     },
+    responsiveClass: {
+        type: String,
+        default: ''
+    }
 })
 
+const baseBreakpoint = (props.responsiveClass) ? props.responsiveClass : 'inline-flex';
 const baseClass =
-    'inline-flex items-center justify-center gap-2 font-bold rounded-lg transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2'
+    `${baseBreakpoint} items-center justify-center gap-2 font-bold transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2`
 
 const variants = {
     primary:
-        'bg-primary text-white hover:bg-primary/90 shadow-lg shadow-primary/20 focus:ring-primary',
+        'bg-primary text-white hover:bg-primary-hover shadow-lg shadow-primary/20 focus:ring-primary',
+    outlinePrimary:
+        'bg-white border border-primary text-primary hover:bg-primary/10 focus:ring-primary',
     secondary:
         'bg-slate-100 text-slate-700 hover:bg-slate-200 focus:ring-slate-300',
+    outlineSecondary:
+        'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 focus:ring-slate-300',
     outline:
         'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 focus:ring-slate-300',
     danger:
-        'bg-red-600 text-white hover:bg-red-700 shadow-lg shadow-red-600/20 focus:ring-red-500',
+        'bg-danger text-white hover:bg-danger-hover shadow-lg shadow-danger/20 focus:ring-danger',
+    outlineDanger:
+        'border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 hover:border-red-300 focus:ring-2 focus:ring-red-500/50',
+    success:
+        'bg-success text-white hover:bg-success-hover shadow-lg shadow-success/20 focus:ring-success',
+    outlineSuccess:
+        'bg-white border border-success text-success hover:bg-success/10 focus:ring-success',
     ghost:
         'bg-transparent text-slate-700 hover:bg-slate-100 focus:ring-slate-300',
 }
 
+const roundeds = {
+    none: 'rounded-none',
+    sm: 'rounded-sm',
+    md: 'rounded-md',
+    lg: 'rounded-lg',
+    xl: 'rounded-xl',
+    full: 'rounded-full',
+}
+
 const sizes = {
-    sm: 'h-9 px-4 text-sm',
-    md: 'h-12 px-6 text-sm',
+    sm: 'h-10 px-4 text-sm',
+    md: 'h-12 px-8 text-sm',
     lg: 'h-14 px-8 text-base',
 }
 
 const finalClass = computed(() => [
     baseClass,
     variants[props.variant],
+    roundeds[props.rounded],
     sizes[props.size],
     props.full && 'w-full',
     (props.disabled || props.loading) &&
-        'opacity-60 cursor-not-allowed pointer-events-none',
+    'opacity-60 cursor-not-allowed pointer-events-none',
 ])
+
+const componentBehavior = computed(() => {
+    if (props.href) {
+        return (props.href.includes('#')) ? 'a' : Link
+    } else {
+        return 'button'
+    }
+})
 
 </script>
 
 <template>
-    <component
-        :is="href ? Link : 'button'"
-        :href="href"
-        :type="!href ? type : undefined"
-        :disabled="disabled || loading"
-        :class="finalClass"
-    >
+    <component :is="componentBehavior" :href="href" :type="!href ? type : undefined"
+        :disabled="disabled || loading" :class="finalClass">
         <!-- Loading state -->
         <span v-if="loading" class="animate-spin">
-            <svg
-                class="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-            >
-                <circle
-                    class="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    stroke-width="4"
-                />
-                <path
-                    class="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                />
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
             </svg>
         </span>
 
@@ -101,4 +118,3 @@ const finalClass = computed(() => [
         <slot v-else />
     </component>
 </template>
-

@@ -10,12 +10,10 @@ const displayValue = ref(0);
 const statElement = ref(null);
 
 const numericValue = computed(() => {
-    // Extract numbers from string "500+" -> 500
     return parseInt(props.value.replace(/\D/g, '')) || 0;
 });
 
 const suffix = computed(() => {
-    // Extract suffix "500+" -> "+"
     return props.value.replace(/[0-9]/g, '');
 });
 
@@ -35,7 +33,7 @@ onMounted(() => {
 });
 
 const startCounting = () => {
-    const duration = 2000; // 2 seconds
+    const duration = 2000; 
     const start = 0;
     const end = numericValue.value;
     const startTime = performance.now();
@@ -44,7 +42,6 @@ const startCounting = () => {
         const elapsed = currentTime - startTime;
         const progress = Math.min(elapsed / duration, 1);
         
-        // Easing function (easeOutExpo)
         const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
         
         displayValue.value = Math.floor(start + (end - start) * ease);

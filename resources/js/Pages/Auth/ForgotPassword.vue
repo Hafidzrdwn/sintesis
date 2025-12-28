@@ -1,6 +1,5 @@
 <script setup>
 import AuthLayout from '@/Layouts/AuthLayout.vue';
-import InputError from '@/Components/InputError.vue';
 import { Head, useForm, Link } from '@inertiajs/vue3';
 
 defineProps({
@@ -50,7 +49,6 @@ const submit = () => {
                     type="email"
                     autofocus
                 />
-                <InputError :message="form.errors.email" />
             </div>
 
             <!-- Submit Button -->

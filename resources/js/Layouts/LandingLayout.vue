@@ -19,13 +19,14 @@ const mainClasses = computed(() => {
 </script>
 
 <template>
-    <div class="bg-white text-text-main font-display antialiased selection:bg-primary/20 selection:text-primary min-h-screen flex flex-col">
+    <div
+        class="bg-white text-text-main font-display antialiased selection:bg-primary/20 selection:text-primary min-h-screen flex flex-col">
         <NavBar />
-        
-        <main :class="mainClasses">
+
+        <main :class="mainClasses" scroll-region>
             <slot />
         </main>
-        
+
         <Footer />
     </div>
 </template>

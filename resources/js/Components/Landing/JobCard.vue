@@ -3,10 +3,10 @@ import { Link } from '@inertiajs/vue3';
 
 defineProps({
     title: String,
-    type: String, // Remote, Hybrid, On-site
+    type: String, 
     status: {
         type: String,
-        default: 'Terbuka' // Terbuka, Ditutup
+        default: 'Terbuka'
     },
     description: String,
     updatedAt: String,
@@ -52,12 +52,12 @@ defineProps({
             </p>
             <div class="flex items-center justify-between mt-auto pt-4 border-t border-slate-100">
                 <span class="text-slate-400 text-xs font-medium">Updated: {{ updatedAt }}</span>
-                <button 
+                <Link :href="href" 
                     v-if="status === 'Terbuka'"
                     class="text-sm font-bold text-primary hover:text-primary-hover flex items-center gap-1 cursor-pointer"
                 >
                     Lihat Detail <span class="material-symbols-outlined text-sm">arrow_outward</span>
-                </button>
+                </Link>
                  <button 
                     v-else
                     class="text-sm font-bold text-slate-400 cursor-not-allowed flex items-center gap-1" 
