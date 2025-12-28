@@ -87,9 +87,11 @@ const user = computed(() => {
                                     </p>
                                     <p class="text-xs text-gray-500 mt-1">Calon Intern</p>
                                 </div>
-                                <div
+                                <img v-if="user.avatar" :src="user.avatar" alt="Avatar"
                                     class="h-10 w-10 rounded-full bg-primary/10 ring-2 ring-white shadow-sm flex items-center justify-center text-primary font-bold text-lg">
-                                    {{ user.name.charAt(0) }}
+                                <div v-else
+                                    class="h-10 w-10 rounded-full bg-primary/10 ring-2 ring-white shadow-sm flex items-center justify-center text-primary font-bold text-lg">
+                                    {{ user.name.charAt(0).toUpperCase() }}
                                 </div>
                             </div>
                             <span class="material-symbols-outlined text-gray-400">keyboard_arrow_down</span>
@@ -116,7 +118,9 @@ const user = computed(() => {
                                     Dashboard
                                 </Link>
                                 <Link :href="route('profile.edit')"
-                                    class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer">
+                                    class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
+                                    :class="{ 'bg-primary text-white hover:bg-primary-hover': $page.url == '/profile' }"
+                                    >
                                     <span class="material-symbols-outlined fill">person_edit</span>
                                     Edit Profil
                                 </Link>
@@ -178,7 +182,12 @@ const user = computed(() => {
                     Dashboard
                 </Link>
                 <Link :href="route('profile.edit')"
-                    class="text-base font-medium block cursor-pointer text-slate-600 hover:text-primary transition-colors">
+                    class="text-base font-medium block cursor-pointer transition-colors"
+                    :class="{
+                        'text-slate-600 hover:text-primary': $page.url != '/profile',
+                        'text-primary hover:text-primary-hover': $page.url == '/profile'
+                    }"
+                    >
                     Edit Profil
                 </Link>
                 <div class="pt-2">

@@ -23,7 +23,7 @@ use Laravel\Socialite\Facades\Socialite;
  * 1. PUBLIC PORTAL (Login.vue/Register.vue): Applicants can register/login via Google
  * 2. INTERNAL PORTAL (InternalLogin.vue): Staff use manual login only (no Google)
  * 
- * SECURITY (KSI):
+ * SECURITY:
  * - Public: Auto-merge if email exists, create new if not
  * - Logs all authentication attempts for audit purposes
  */
@@ -79,21 +79,16 @@ class GoogleController extends Controller
         $intent = session('google_auth_intent', 'login');
         session()->forget('google_auth_intent');
 
-        // Check if user exists
         $user = User::where('email', $googleUser->getEmail())->first();
 
         if ($user) {
-            // User exists - handle auto-merge and login
             return $this->handleExistingUser($user, $googleUser, $request);
         }
 
-        // User doesn't exist
         if ($intent === 'register') {
-            // Create new user via Google registration
             return $this->handleNewRegistration($googleUser, $request);
         }
 
-        // Intent was login but user doesn't exist
         $this->logFailedLogin($googleUser->getEmail(), $request, 'Email not registered');
         
         return redirect()->route('login')
@@ -105,7 +100,6 @@ class GoogleController extends Controller
      */
     private function handleExistingUser(User $user, $googleUser, Request $request): RedirectResponse
     {
-        // Check if user account is active
         if (!$user->isActive()) {
             $this->logFailedLogin($googleUser->getEmail(), $request, 'Account suspended');
 
@@ -113,7 +107,6 @@ class GoogleController extends Controller
                 ->with('error', 'Akun Anda telah dinonaktifkan. Silakan hubungi administrator.');
         }
 
-        // Auto-merge: Link Google ID to existing account
         $wasLinked = $user->google_id !== null;
         
         $user->update([
@@ -122,14 +115,11 @@ class GoogleController extends Controller
             'email_verified_at' => $user->email_verified_at ?? now(),
         ]);
 
-        // Login the user
         Auth::login($user, true);
         $request->session()->regenerate();
 
-        // Log successful login
         $this->logSuccessfulLogin($user, $request, $wasLinked ? 'google_login' : 'google_linked');
 
-        // Show appropriate message
         $message = $wasLinked 
             ? 'Selamat datang kembali, ' . $user->name . '!'
             : 'Akun Google berhasil terhubung. Selamat datang, ' . $user->name . '!';
@@ -150,17 +140,15 @@ class GoogleController extends Controller
                 'email' => $googleUser->getEmail(),
                 'google_id' => $googleUser->getId(),
                 'avatar' => $googleUser->getAvatar(),
-                'password' => null, // No password for Google-only users
-                'role' => 'intern', // Default role for public registrants
+                'password' => null, 
+                'role' => 'intern',
                 'status' => 'active',
-                'email_verified_at' => now(), // Google emails are pre-verified
+                'email_verified_at' => now(), 
             ]);
 
-            // Login the new user
             Auth::login($user, true);
             $request->session()->regenerate();
 
-            // Log registration
             $this->logRegistration($user, $request);
 
             return redirect()->to('/dashboard')

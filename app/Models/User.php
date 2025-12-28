@@ -204,4 +204,55 @@ class User extends Authenticatable implements MustVerifyEmail
                 ->where('status', 'active');
         })->get();
     }
+
+    /**
+     * Get the applicant record for this user (matched by email)
+     */
+    public function applicant()
+    {
+        return Applicant::where('email', $this->email)->latest()->first();
+    }
+
+    /**
+     * Check if user has an active internship
+     */
+    public function hasActiveInternship(): bool
+    {
+        return $this->currentInternship() !== null;
+    }
+
+    /**
+     * Get user's application status for dashboard routing
+     * Returns: 'active_intern' | 'accepted' | 'pending' | 'rejected' | 'none'
+     */
+    public function getApplicationStatus(): string
+    {
+        // Check for active internship first
+        if ($this->hasActiveInternship()) {
+            return 'active_intern';
+        }
+
+        // Check for applicant record
+        $applicant = $this->applicant();
+        
+        if (!$applicant) {
+            return 'none';
+        }
+
+        return match ($applicant->status) {
+            'accepted' => 'accepted',
+            'rejected' => 'rejected',
+            default => 'pending', // pending, reviewed, interview
+        };
+    }
+
+    /**
+     * Check if user can apply for a new job
+     * Only allowed if no application or last application was rejected
+     */
+    public function canApply(): bool
+    {
+        $status = $this->getApplicationStatus();
+        return in_array($status, ['none', 'rejected']);
+    }
 }

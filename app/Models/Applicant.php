@@ -13,24 +13,38 @@ class Applicant extends Model
 {
     use HasFactory, HasUuids, SoftDeletes, Auditable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
+        'job_id',
+        // Step 1: Identity
         'full_name',
         'email',
         'phone',
-        'birth_date',
-        'gender',
-        'address',
         'university',
-        'major',
-        'semester',
-        'position_applied',
-        'cv_path',
+        'referral',
+        
+        // Step 2: Competencies
+        'skills',
+        'other_skills',
+        'databases',
+        'other_databases',
+        'operating_systems',
+        'other_os',
+        
+        // Step 3: Interests
+        'other_interest',
+        'demo_required',
+        'self_description',
         'portfolio_url',
+        
+        // Step 4: Documents
+        'start_date',
+        'end_date',
+        'letter_path',
+        'id_card_path',
+        'cv_path',
+        
+        // Meta
+        'position_applied',
         'motivation',
         'status',
         'notes',
@@ -38,22 +52,19 @@ class Applicant extends Model
         'reviewed_at',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
-            'birth_date' => 'date',
+            'skills' => 'array',
+            'databases' => 'array',
+            'operating_systems' => 'array',
+            'demo_required' => 'boolean',
+            'start_date' => 'date',
+            'end_date' => 'date',
             'reviewed_at' => 'datetime',
         ];
     }
 
-    /**
-     * Status options for dropdown
-     */
     public static function statusOptions(): array
     {
         return [
@@ -65,47 +76,33 @@ class Applicant extends Model
         ];
     }
 
-    /**
-     * Check if applicant is pending
-     */
     public function isPending(): bool
     {
         return $this->status === 'pending';
     }
 
-    /**
-     * Check if applicant is accepted
-     */
     public function isAccepted(): bool
     {
         return $this->status === 'accepted';
     }
 
-    /**
-     * Check if applicant is rejected
-     */
     public function isRejected(): bool
     {
         return $this->status === 'rejected';
     }
 
-    // ========================================
-    // RELATIONSHIPS
-    // ========================================
-
-    /**
-     * The user who reviewed this applicant
-     */
     public function reviewer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reviewed_by');
     }
 
-    /**
-     * The internship created from this application
-     */
     public function internship()
     {
         return $this->hasOne(Internship::class);
+    }
+
+    public function job(): BelongsTo
+    {
+        return $this->belongsTo(Job::class);
     }
 }

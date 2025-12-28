@@ -17,14 +17,23 @@ class ProfileUpdateRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => [
-                'required',
-                'string',
-                'lowercase',
-                'email',
-                'max:255',
-                Rule::unique(User::class)->ignore($this->user()->id),
-            ],
+            'phone' => ['nullable', 'string', 'max:20'],
+            'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
+        ];
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     */
+    public function messages(): array
+    {
+        return [
+            'name.required' => 'Nama lengkap wajib diisi.',
+            'name.max' => 'Nama maksimal 255 karakter.',
+            'phone.max' => 'Nomor telepon maksimal 20 karakter.',
+            'avatar.image' => 'File harus berupa gambar.',
+            'avatar.mimes' => 'Format gambar harus jpeg, png, jpg, gif, atau webp.',
+            'avatar.max' => 'Ukuran gambar maksimal 2MB.',
         ];
     }
 }

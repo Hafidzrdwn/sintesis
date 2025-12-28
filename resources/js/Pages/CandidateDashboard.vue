@@ -1,7 +1,61 @@
 <script setup>
 import BaseButton from '@/Components/BaseButton.vue';
 import LandingLayout from '@/Layouts/LandingLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
+
+const props = defineProps({
+    applicationStatus: {
+        type: String,
+        default: 'none', // 'none' | 'pending' | 'accepted' | 'rejected'
+    },
+    application: {
+        type: Object,
+        default: null,
+    },
+});
+
+const page = usePage();
+const user = computed(() => page.props.auth.user);
+
+// Status display config
+const statusConfig = {
+    pending: {
+        label: 'Sedang Ditinjau',
+        color: 'amber',
+        icon: 'hourglass_top',
+        message: 'Tim HRD kami sedang meninjau berkas lamaran Anda. Proses ini biasanya memakan waktu 2-4 hari kerja.',
+    },
+    reviewed: {
+        label: 'Sudah Direview',
+        color: 'blue',
+        icon: 'fact_check',
+        message: 'Lamaran Anda telah direview oleh tim kami. Mohon tunggu pengumuman selanjutnya.',
+    },
+    interview: {
+        label: 'Jadwal Interview',
+        color: 'purple',
+        icon: 'groups',
+        message: 'Selamat! Anda lolos ke tahap interview. Silakan cek email untuk detail jadwal.',
+    },
+    accepted: {
+        label: 'Diterima',
+        color: 'green',
+        icon: 'check_circle',
+        message: 'Selamat! Lamaran Anda diterima. Silakan tunggu informasi selanjutnya untuk memulai magang.',
+    },
+    rejected: {
+        label: 'Tidak Lolos',
+        color: 'red',
+        icon: 'cancel',
+        message: 'Mohon maaf, lamaran Anda belum dapat kami terima saat ini. Jangan menyerah, Anda dapat mencoba lagi di kesempatan berikutnya.',
+    },
+};
+
+const currentStatus = computed(() => {
+    if (!props.application) return null;
+    return statusConfig[props.application.status] || statusConfig.pending;
+});
 
 defineOptions({
     layout: LandingLayout,
@@ -17,10 +71,12 @@ defineOptions({
         <header class="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
                 <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Dashboard Calon Intern</h1>
-                <p class="mt-1 text-md text-gray-500">Pantau status lamaran aktif Anda dan langkah selanjutnya.</p>
+                <p class="mt-1 text-md text-gray-500">
+                    {{ applicationStatus === 'none' ? 'Mulai perjalanan magang Anda bersama kami.' : 'Pantau status lamaran aktif Anda dan langkah selanjutnya.' }}
+                </p>
             </div>
             <div class="flex items-center gap-2">
-                <span
+                <span v-if="user.status === 'active'"
                     class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
                     <span class="mr-1.5 flex h-2 w-2 relative">
                         <span
@@ -29,135 +85,187 @@ defineOptions({
                     </span>
                     Akun Aktif
                 </span>
+                <span v-else
+                    class="inline-flex items-center rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-700 ring-1 ring-inset ring-red-600/20">
+                    <span class="mr-1.5 flex h-2 w-2 relative">
+                        <span
+                            class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                    </span>
+                    Akun Tidak Aktif/Suspended
+                </span>
             </div>
         </header>
 
         <div class="flex flex-col gap-6">
-            <section
+            <!-- ========================================
+                 EMPTY STATE: No Application
+            ======================================== -->
+            <section v-if="applicationStatus === 'none'"
+                class="bg-gradient-to-br from-primary/5 to-blue-50 rounded-xl border border-primary/20 p-8 text-center">
+                <div class="max-w-lg mx-auto">
+                    <div
+                        class="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
+                        <span class="material-symbols-outlined text-primary text-4xl">work</span>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-3">Belum Ada Lamaran</h2>
+                    <p class="text-gray-600 mb-6">
+                        Anda belum mengajukan lamaran magang. Pilih posisi yang tersedia dan mulai perjalanan karir Anda bersama kami!
+                    </p>
+                    <BaseButton href="/#lowongan" size="lg">
+                        <span class="material-symbols-outlined">search</span>
+                        Cari Lowongan Tersedia
+                    </BaseButton>
+                </div>
+            </section>
+
+            <!-- ========================================
+                 APPLICATION STATUS: Has Application
+            ======================================== -->
+            <section v-else
                 class="bg-white rounded-xl border border-gray-200 shadow-[0_2px_8px_rgba(0,0,0,0.04)] overflow-hidden">
                 <div class="grid lg:grid-cols-5 h-full">
+                    <!-- Left: Application Details -->
                     <div
                         class="lg:col-span-3 p-6 sm:p-8 flex flex-col border-b lg:border-b-0 lg:border-r border-gray-200 bg-gray-50/50">
                         <div class="flex-1">
                             <div class="flex items-start gap-5 mb-6">
                                 <div
                                     class="h-16 w-16 min-w-[4rem] rounded-xl bg-white border border-gray-200 p-3 shadow-sm flex items-center justify-center overflow-hidden">
-                                    <div
-                                        class="w-full h-full bg-contain bg-center bg-no-repeat flex items-center justify-center text-gray-400">
-                                        <span class="material-symbols-outlined text-[32px]">work</span>
-                                    </div>
+                                    <span class="material-symbols-outlined text-[32px] text-gray-400">work</span>
                                 </div>
                                 <div>
                                     <div class="flex flex-wrap items-center gap-2 mb-2">
                                         <span
                                             class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-blue-100 text-blue-700 border border-blue-200">Internship</span>
-                                        <span
-                                            class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-purple-100 text-purple-700 border border-purple-200">Remote</span>
                                     </div>
-                                    <h2 class="text-xl font-bold text-gray-900 leading-tight">UI/UX Designer Intern</h2>
-                                    <p class="text-sm text-gray-500 mt-1 font-mono">#REQ-2023-001</p>
+                                    <h2 class="text-xl font-bold text-gray-900 leading-tight">
+                                        {{ application?.position_applied || 'Posisi Magang' }}
+                                    </h2>
+                                    <p class="text-sm text-gray-500 mt-1">Diajukan: {{ application?.created_at }}</p>
                                 </div>
                             </div>
 
-                            <div class="bg-amber-50 border-l-4 border-amber-400 rounded-r-lg p-4 mb-6">
-                                <h3 class="text-sm font-bold text-amber-900 flex items-center gap-2">
-                                    <span class="material-symbols-outlined text-[18px]">hourglass_top</span>
-                                    Lamaran Sedang Ditinjau
+                            <!-- Status Alert -->
+                            <div v-if="currentStatus" 
+                                :class="[
+                                    'border-l-4 rounded-r-lg p-4 mb-6',
+                                    `bg-${currentStatus.color}-50 border-${currentStatus.color}-400`
+                                ]">
+                                <h3 :class="`text-sm font-bold text-${currentStatus.color}-900 flex items-center gap-2`">
+                                    <span class="material-symbols-outlined text-[18px]">{{ currentStatus.icon }}</span>
+                                    {{ currentStatus.label }}
                                 </h3>
-                                <p class="text-xs text-amber-800 mt-1.5 leading-relaxed font-body">
-                                    Tim HRD kami sedang meninjau berkas lamaran Anda. Proses ini biasanya memakan waktu
-                                    2-4
-                                    hari kerja. Hasil seleksi akan diumumkan melalui email dan dashboard ini.
+                                <p :class="`text-xs text-${currentStatus.color}-800 mt-1.5 leading-relaxed`">
+                                    {{ currentStatus.message }}
                                 </p>
                             </div>
 
+                            <!-- Application Info -->
                             <div class="grid grid-cols-2 gap-y-4 gap-x-8 text-sm border-t border-gray-200 pt-5 mt-auto">
                                 <div>
-                                    <p class="text-gray-500 text-xs uppercase font-bold tracking-wider mb-1">Tanggal
-                                        Melamar
-                                    </p>
-                                    <p class="font-semibold text-gray-900">11 Agustus 2025</p>
+                                    <p class="text-gray-500 text-xs uppercase font-bold tracking-wider mb-1">Tanggal Melamar</p>
+                                    <p class="font-semibold text-gray-900">{{ application?.created_at }}</p>
                                 </div>
                                 <div>
-                                    <p class="text-gray-500 text-xs uppercase font-bold tracking-wider mb-1">Asal
-                                        Sekolah/Universitas
-                                    </p>
-                                    <p class="font-semibold text-gray-900">UPN 'Veteran' Jawa Timur</p>
+                                    <p class="text-gray-500 text-xs uppercase font-bold tracking-wider mb-1">Asal Universitas</p>
+                                    <p class="font-semibold text-gray-900">{{ application?.university || '-' }}</p>
                                 </div>
                             </div>
                         </div>
-                        <div class="mt-6 pt-2">
-                            <BaseButton variant="outlinePrimary">
-                                <span class="material-symbols-outlined">visibility</span>
-                                Lihat Detail Lamaran
-                            </BaseButton>
-                        </div>
                     </div>
 
+                    <!-- Right: Progress Timeline -->
                     <div class="lg:col-span-2 p-6 sm:p-8 bg-white flex flex-col">
                         <h3 class="font-bold text-lg text-gray-900 mb-6 flex items-center gap-2 pb-4 border-b border-gray-100">
                             <span class="material-symbols-outlined text-primary">history_edu</span>
                             Riwayat Progres
                         </h3>
                         <div class="relative pl-1 flex-1">
-                            <div class="relative flex gap-4 pb-8 group">
+                            <!-- Step 1: Registration -->
+                            <div class="relative flex gap-4 pb-8">
                                 <div class="flex flex-col items-center relative z-10">
-                                    <div
-                                        class="h-8 w-8 rounded-full bg-primary flex items-center justify-center shadow-md shadow-primary/20 transition-transform group-hover:scale-110">
-                                        <span
-                                            class="material-symbols-outlined text-white font-bold">check</span>
+                                    <div class="h-8 w-8 rounded-full bg-primary flex items-center justify-center shadow-md shadow-primary/20">
+                                        <span class="material-symbols-outlined text-white font-bold">check</span>
                                     </div>
                                     <div class="w-0.5 h-full bg-primary/20 absolute top-8"></div>
                                 </div>
                                 <div>
                                     <p class="text-md font-bold text-gray-900">Registrasi Berhasil</p>
-                                    <p class="text-sm text-gray-500 mt-0.5 font-medium">10 Okt 2023, 09:00 WIB</p>
+                                    <p class="text-sm text-gray-500 mt-0.5 font-medium">Akun terdaftar</p>
                                 </div>
                             </div>
 
-                            <!-- Step 2: Completed -->
-                            <div class="relative flex gap-4 pb-8 group">
+                            <!-- Step 2: Application Submitted -->
+                            <div class="relative flex gap-4 pb-8">
                                 <div class="flex flex-col items-center relative z-10">
-                                    <div
-                                        class="h-8 w-8 rounded-full bg-primary flex items-center justify-center shadow-md shadow-primary/20 transition-transform group-hover:scale-110">
-                                        <span
-                                            class="material-symbols-outlined text-white font-bold">mark_email_read</span>
+                                    <div class="h-8 w-8 rounded-full bg-primary flex items-center justify-center shadow-md shadow-primary/20">
+                                        <span class="material-symbols-outlined text-white font-bold">mark_email_read</span>
                                     </div>
                                     <div class="w-0.5 h-full bg-primary/20 absolute top-8"></div>
                                 </div>
                                 <div>
                                     <p class="text-md font-bold text-gray-900">Lamaran Terkirim</p>
-                                    <p class="text-sm text-gray-500 mt-0.5 font-medium">12 Okt 2023, 14:30 WIB</p>
+                                    <p class="text-sm text-gray-500 mt-0.5 font-medium">{{ application?.created_at }}</p>
                                 </div>
                             </div>
 
+                            <!-- Step 3: Review Status -->
                             <div class="relative flex gap-4 pb-8">
                                 <div class="flex flex-col items-center relative z-10">
-                                    <div
-                                        class="h-8 w-8 rounded-full bg-white border-2 border-amber-400 flex items-center justify-center shadow-sm relative">
-                                        <div class="h-2.5 w-2.5 rounded-full bg-amber-400 animate-pulse"></div>
+                                    <div :class="[
+                                        'h-8 w-8 rounded-full flex items-center justify-center',
+                                        application?.status === 'pending' 
+                                            ? 'bg-white border-2 border-amber-400'
+                                            : 'bg-primary shadow-md shadow-primary/20'
+                                    ]">
+                                        <div v-if="application?.status === 'pending'" class="h-2.5 w-2.5 rounded-full bg-amber-400 animate-pulse"></div>
+                                        <span v-else class="material-symbols-outlined text-white font-bold">check</span>
                                     </div>
                                     <div class="w-0.5 h-full bg-gray-100 absolute top-8"></div>
                                 </div>
                                 <div>
-                                    <p class="text-md font-bold text-amber-600">Seleksi Administrasi</p>
-                                    <span
+                                    <p :class="[
+                                        'text-md font-bold',
+                                        application?.status === 'pending' ? 'text-amber-600' : 'text-gray-900'
+                                    ]">Seleksi Administrasi</p>
+                                    <span v-if="application?.status === 'pending'"
                                         class="inline-flex mt-1 items-center px-2 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-100">
                                         Sedang Berlangsung
                                     </span>
+                                    <p v-else class="text-sm text-gray-500 mt-0.5">{{ application?.reviewed_at || 'Selesai' }}</p>
                                 </div>
                             </div>
 
+                            <!-- Step 4: Final Result -->
                             <div class="relative flex gap-4">
                                 <div class="flex flex-col items-center relative z-10">
-                                    <div
-                                        class="h-8 w-8 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-300">
-                                        <span class="material-symbols-outlined">groups</span>
+                                    <div :class="[
+                                        'h-8 w-8 rounded-full flex items-center justify-center',
+                                        application?.status === 'accepted' ? 'bg-green-500' :
+                                        application?.status === 'rejected' ? 'bg-red-500' :
+                                        'bg-gray-50 border border-gray-200 text-gray-300'
+                                    ]">
+                                        <span v-if="application?.status === 'accepted'" class="material-symbols-outlined text-white">check_circle</span>
+                                        <span v-else-if="application?.status === 'rejected'" class="material-symbols-outlined text-white">cancel</span>
+                                        <span v-else class="material-symbols-outlined">groups</span>
                                     </div>
                                 </div>
                                 <div>
-                                    <p class="text-md font-medium text-gray-400">Pengumuman</p>
-                                    <p class="text-sm text-gray-400 mt-0.5">Menunggu jadwal</p>
+                                    <p :class="[
+                                        'text-md font-medium',
+                                        application?.status === 'accepted' ? 'text-green-600' :
+                                        application?.status === 'rejected' ? 'text-red-600' :
+                                        'text-gray-400'
+                                    ]">
+                                        {{ application?.status === 'accepted' ? 'Diterima!' : 
+                                           application?.status === 'rejected' ? 'Tidak Lolos' : 'Pengumuman' }}
+                                    </p>
+                                    <p class="text-sm text-gray-400 mt-0.5">
+                                        {{ application?.status === 'accepted' || application?.status === 'rejected' 
+                                            ? application?.reviewed_at 
+                                            : 'Menunggu jadwal' }}
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -165,7 +273,30 @@ defineOptions({
                 </div>
             </section>
 
+            <!-- ========================================
+                 REJECTED: Apply Again CTA
+            ======================================== -->
+            <section v-if="applicationStatus === 'rejected'"
+                class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-6">
+                <div class="flex flex-col sm:flex-row items-center gap-4">
+                    <div class="flex-1">
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">Jangan Menyerah!</h3>
+                        <p class="text-sm text-gray-600">
+                            Kami membuka lowongan baru setiap bulan. Tingkatkan skill Anda dan coba lagi di kesempatan berikutnya.
+                        </p>
+                    </div>
+                    <BaseButton href="/#lowongan" variant="outlinePrimary">
+                        <span class="material-symbols-outlined">search</span>
+                        Lihat Lowongan Lain
+                    </BaseButton>
+                </div>
+            </section>
+
+            <!-- ========================================
+                 BOTTOM: Explore & Help Section
+            ======================================== -->
             <section class="grid md:grid-cols-3 gap-6">
+                <!-- Explore Card -->
                 <div
                     class="md:col-span-2 bg-gradient-to-br from-white to-blue-50 rounded-xl border border-gray-200 p-6 flex flex-col-reverse sm:flex-row items-center gap-6 relative overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)] group">
                     <div
@@ -177,24 +308,20 @@ defineOptions({
                             <span class="material-symbols-outlined">stars</span>
                             <span>Peluang Baru</span>
                         </div>
-                        <h3 class="text-lg font-bold text-gray-900 mb-2">Masih mencari posisi yang lebih cocok?</h3>
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">
+                            {{ applicationStatus === 'none' ? 'Mulai Karir Anda!' : 'Masih mencari posisi yang lebih cocok?' }}
+                        </h3>
                         <p class="text-sm text-gray-600 mb-5 leading-relaxed font-body">
-                            Jangan lewatkan kesempatan emas lainnya. Kami membuka lowongan baru setiap minggunya di
-                            berbagai
-                            divisi.
+                            Jangan lewatkan kesempatan emas lainnya. Kami membuka lowongan baru setiap minggunya di berbagai divisi.
                         </p>
                         <BaseButton href="/#lowongan">
                             <span>Jelajahi Lowongan</span>
-                            <span
-                                class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                            <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
                         </BaseButton>
                     </div>
                     <div
                         class="w-full sm:w-1/3 min-h-[160px] rounded-lg bg-cover bg-center shadow-inner border border-white/50 relative overflow-hidden bg-slate-200 flex items-center justify-center">
                         <span class="material-symbols-outlined text-4xl text-slate-300">image</span>
-                        <div
-                            class="absolute inset-0 bg-primary/10 group-hover:bg-primary/0 transition-colors duration-500">
-                        </div>
                     </div>
                 </div>
 
@@ -211,13 +338,11 @@ defineOptions({
                                     <span class="material-symbols-outlined text-[18px]">help_center</span>
                                 </div>
                                 <div class="flex-1">
-                                    <p
-                                        class="text-sm font-bold text-gray-700 group-hover:text-primary transition-colors">
+                                    <p class="text-sm font-bold text-gray-700 group-hover:text-primary transition-colors">
                                         Pusat Bantuan</p>
                                     <p class="text-[10px] text-gray-500">FAQ & Panduan</p>
                                 </div>
-                                <span
-                                    class="material-symbols-outlined text-gray-300 text-[18px] group-hover:text-primary">chevron_right</span>
+                                <span class="material-symbols-outlined text-gray-300 text-[18px] group-hover:text-primary">chevron_right</span>
                             </a>
                         </li>
                         <li>
@@ -228,13 +353,11 @@ defineOptions({
                                     <span class="material-symbols-outlined text-[18px]">support_agent</span>
                                 </div>
                                 <div class="flex-1">
-                                    <p
-                                        class="text-sm font-bold text-gray-700 group-hover:text-primary transition-colors">
+                                    <p class="text-sm font-bold text-gray-700 group-hover:text-primary transition-colors">
                                         Hubungi HR</p>
                                     <p class="text-[10px] text-gray-500">Senin - Jumat, 09:00 - 17:00</p>
                                 </div>
-                                <span
-                                    class="material-symbols-outlined text-gray-300 text-[18px] group-hover:text-primary">chevron_right</span>
+                                <span class="material-symbols-outlined text-gray-300 text-[18px] group-hover:text-primary">chevron_right</span>
                             </a>
                         </li>
                     </ul>

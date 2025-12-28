@@ -7,7 +7,14 @@ import JobCard from '@/Components/Landing/JobCard.vue';
 import ProcessStepCard from '@/Components/Landing/ProcessStepCard.vue';
 import TestimonialCard from '@/Components/Landing/TestimonialCard.vue';
 import StatItem from '@/Components/Landing/StatItem.vue';
-import { onMounted, onUnmounted } from 'vue';
+import { onMounted, onUnmounted, computed } from 'vue';
+
+defineProps({
+    jobs: {
+        type: Array,
+        default: () => [],
+    },
+});
 
 defineOptions({ layout: LandingLayout })
 
@@ -42,35 +49,6 @@ const steps = [
         title: 'Onboarding',
         description: "Mulai periode magang dengan akses penuh ke tools dan ekosistem SINTESIS.",
         icon: 'rocket_launch'
-    }
-];
-
-const jobs = [
-    {
-        title: 'Magang Data Analyst',
-        type: 'Remote',
-        status: 'Terbuka',
-        description: 'Menganalisis dataset internal untuk mendapatkan wawasan bisnis. Bekerja langsung dengan data warehouse Inosoft menggunakan SQL dan Python.',
-        updatedAt: '2 hari lalu',
-        image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB3k1fvEBE1Nku2nHA0XdWpezFtnAU_3jOROOYFVuVRqi82j9PaCf8DNVRMTlhcbpnhPJIwtFEY5rTMJpZDtz53BZ0AQyptx6k3ht5BnStahuZHrOVWq3Miova1QzSxbotS0De58O1d4Jq2xVBa-nVcz8OeHSWuAtsSRW6BT4dDOkqIMEVyBl5a2B7-rIpLPxidU8ulrjGidi9AUefGyH1vbEAtw2w7d9T8FA_QrkmFEL_HF4DsFHk1id7AaWEDM-Ptl-q2pgT9Ltb-',
-        href: '/lowongan/detail'
-    },
-    {
-        title: 'Magang UI/UX Design',
-        type: 'Hybrid',
-        status: 'Terbuka',
-        description: 'Merancang antarmuka aplikasi internal SINTESIS yang intuitif. Berkolaborasi dengan developer untuk mengimplementasikan design system perusahaan.',
-        updatedAt: '5 hari lalu',
-        image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuACtT8JbF6Dkg_H5N1rMwbN9qhTOr2pDuQxV7wIPVe5u5oGtGsBTw6LSugZi35iizpdnmPV8Nz1ABBKYWr-2QYlF4-L1R56OQWtSnJb3Ff6LLY15Rrt-8VOGs_OwJn9FEOxPTHOoIRn9Jjch640r2WfRuzq3BQVNGWkraqFBlXiVmcB8YzhYITTILkTFk6EdjGerzx6kLfhjPCi4NbuPI7jfqatQHX7TteN7qMFpGS7q7eB-UuG91Di44wRDh3JgW0-_gMqJelRk6hK',
-        href: '/lowongan/detail'
-    },
-    {
-        title: 'Magang Backend Developer',
-        type: 'On-site',
-        status: 'Ditutup',
-        description: 'Membangun API dan layanan mikro yang kuat. Mengoptimalkan kinerja database dan memastikan ketersediaan tinggi layanan platform.',
-        updatedAt: '1 minggu lalu',
-        image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBNeK5WHYL0uMOqpi9Wa-wDooQ-3PN_gXwo6--KlI9wZdB5ItNW0HUwpe3b5Wl3oeFeJmPYJ99AinH0F6UFNRETNnZfms_uO4lLSN9QgbX8ID2vKvUJWV4z0wdQNl50qh1Ackm7sL-ULmPkrGSnmK7LGbe9zOjvisp68amlGClhsNywFRihWUlYzfrJ9b-lpiwQHYQlHGIHFafHoCPlRdXgmy91vs0yb4j3VLANTB52T-Mc2_Dr1hXlOJSA1fo_xAqc99WU2pUIhK8o'
     }
 ];
 
@@ -210,11 +188,27 @@ onUnmounted(() => {
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <div v-for="(job, index) in jobs" :key="job.title" class="reveal-on-scroll"
-                    :class="`stagger-${index + 1}`">
-                    <JobCard v-bind="job" />
+            <!-- Dynamic Jobs from Database -->
+            <div v-if="jobs.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div v-for="(job, index) in jobs" :key="job.id" class="reveal-on-scroll"
+                    :class="`stagger-${(index % 3) + 1}`">
+                    <JobCard 
+                        :title="job.title"
+                        :type="job.type"
+                        :status="job.statusLabel"
+                        :description="job.description"
+                        :updatedAt="job.updatedAt"
+                        :image="job.image"
+                        :href="job.href"
+                    />
                 </div>
+            </div>
+
+            <!-- Empty State -->
+            <div v-else class="text-center py-16 bg-white rounded-xl border border-slate-200">
+                <span class="material-symbols-outlined text-6xl text-slate-300 mb-4">work_off</span>
+                <h3 class="text-xl font-bold text-slate-700 mb-2">Belum Ada Lowongan</h3>
+                <p class="text-slate-500">Lowongan magang akan segera tersedia. Pantau terus halaman ini!</p>
             </div>
         </div>
     </section>

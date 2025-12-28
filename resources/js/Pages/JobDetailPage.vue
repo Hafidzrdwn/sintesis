@@ -1,13 +1,74 @@
 <script setup>
-import { ref } from 'vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { ref, computed } from 'vue';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import LandingLayout from '@/Layouts/LandingLayout.vue';
 import ProcessStepCard from '@/Components/Landing/ProcessStepCard.vue';
 import JobStatCard from '@/Components/Landing/JobStatCard.vue';
 import BaseButton from '@/Components/BaseButton.vue';
 
+const props = defineProps({
+    job: {
+        type: Object,
+        required: true,
+    },
+    stats: {
+        type: Object,
+        default: () => ({
+            total: 0,
+            pending: 0,
+            reviewed: 0,
+            rejected: 0,
+            accepted: 0,
+        }),
+    },
+    canApply: {
+        type: Boolean,
+        default: true,
+    },
+});
+
+const page = usePage();
+const isLoggedIn = computed(() => !!page.props.auth?.user);
+
 const activeTab = ref('Tentang');
 const tabs = ['Tentang', 'Persyaratan', 'Benefit', 'Proses Seleksi'];
+
+// Share functionality
+const shareToast = ref(false);
+const shareToastMessage = ref('');
+
+const shareJob = async () => {
+    const url = window.location.href;
+    const title = `${props.job.title} - Magang di Inosoft Trans Sistem`;
+    
+    if (navigator.share) {
+        try {
+            await navigator.share({
+                title: title,
+                text: `Lowongan magang ${props.job.title} di Inosoft Trans Sistem. Daftar sekarang!`,
+                url: url,
+            });
+            return;
+        } catch (err) {
+            // User cancelled or share failed, fallback to copy
+        }
+    }
+    
+    try {
+        await navigator.clipboard.writeText(url);
+        shareToastMessage.value = 'Link berhasil disalin!';
+        shareToast.value = true;
+        setTimeout(() => {
+            shareToast.value = false;
+        }, 3000);
+    } catch (err) {
+        shareToastMessage.value = 'Gagal menyalin link';
+        shareToast.value = true;
+        setTimeout(() => {
+            shareToast.value = false;
+        }, 3000);
+    }
+};
 
 const selectionSteps = [
     {
@@ -36,13 +97,13 @@ const selectionSteps = [
     }
 ];
 
-const stats = [
-    { label: 'Total', value: 128, subLabel: 'Pelamar', icon: 'group', color: 'blue' },
-    { label: 'Menunggu', value: 45, subLabel: 'Belum review', icon: 'hourglass_top', color: 'yellow' },
-    { label: 'Ditinjau', value: 23, subLabel: 'Screening', icon: 'find_in_page', color: 'indigo' },
-    { label: 'Ditolak', value: 54, subLabel: 'Tidak lolos', icon: 'close', color: 'red' },
-    { label: 'Diterima', value: 6, subLabel: 'Onboarding', icon: 'check', color: 'green' },
-];
+const statItems = computed(() => [
+    { label: 'Total', value: props.stats.total, subLabel: 'Pelamar', icon: 'group', color: 'blue' },
+    { label: 'Menunggu', value: props.stats.pending, subLabel: 'Belum review', icon: 'hourglass_top', color: 'yellow' },
+    { label: 'Ditinjau', value: props.stats.reviewed, subLabel: 'Screening', icon: 'find_in_page', color: 'indigo' },
+    { label: 'Ditolak', value: props.stats.rejected, subLabel: 'Tidak lolos', icon: 'close', color: 'red' },
+    { label: 'Diterima', value: props.stats.accepted, subLabel: 'Onboarding', icon: 'check', color: 'green' },
+]);
 
 defineOptions({
     layout: (h, page) => h(LandingLayout, { mainClass: 'bg-slate-50' }, () => page),
@@ -51,7 +112,7 @@ defineOptions({
 
 <template>
 
-    <Head title="Detail Lowongan" />
+    <Head :title="`${job.title} - Detail Lowongan`" />
 
     <div class="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         <!-- Breadcrumb & Back -->
@@ -59,7 +120,7 @@ defineOptions({
             <div class="flex items-center gap-2 text-sm text-slate-500">
                 <Link href="/#lowongan" class="hover:text-primary transition-colors">Lowongan</Link>
                 <span class="material-symbols-outlined text-base">chevron_right</span>
-                <span class="text-slate-900 font-medium">Frontend Developer Intern</span>
+                <span class="text-slate-900 font-medium">{{ job.title }}</span>
             </div>
             <Link href="/"
                 class="hidden sm:flex items-center gap-1 text-sm text-slate-500 hover:text-primary transition-colors">
@@ -82,22 +143,21 @@ defineOptions({
                             <div class="flex flex-col sm:flex-row justify-between items-start gap-2">
                                 <div>
                                     <div class="flex items-center gap-3 mb-2">
-                                        <span
-                                            class="bg-green-50 text-green-700 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-green-100">Terbuka</span>
+                                        <span :class="[
+                                            'text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border',
+                                            job.status === 'open' 
+                                                ? 'bg-green-50 text-green-700 border-green-100'
+                                                : 'bg-red-50 text-red-700 border-red-100'
+                                        ]">{{ job.statusLabel }}</span>
+                                        <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border bg-blue-50 text-blue-700 border-blue-100">{{ job.type }}</span>
                                     </div>
                                     <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 leading-tight mb-2">
-                                        Frontend Developer Intern</h1>
+                                        {{ job.title }}</h1>
                                     <p class="text-slate-500 font-medium flex items-center gap-1">
                                         Inosoft Trans Sistem
                                         <span class="text-slate-300">•</span>
                                         <span class="text-primary text-sm">Internship</span>
                                     </p>
-                                </div>
-                                <div class="flex flex-col items-end gap-1 mt-2 sm:mt-0">
-                                    <button
-                                        class="text-slate-400 hover:text-primary transition-colors p-1 cursor-pointer">
-                                        <span class="material-symbols-outlined">bookmark</span>
-                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -125,28 +185,12 @@ defineOptions({
                             class="prose prose-slate prose-sm max-w-none text-slate-600 leading-relaxed space-y-8">
                             <section>
                                 <h3 class="text-lg font-bold text-slate-900 mb-4">Deskripsi Pekerjaan</h3>
-                                <p>
-                                    Inosoft Trans Sistem membuka kesempatan magang bagi mahasiswa tingkat akhir yang
-                                    memiliki passion di bidang pengembangan web frontend. Posisi ini bertujuan untuk
-                                    memberikan pengalaman praktis dalam membangun antarmuka aplikasi web modern yang
-                                    responsif dan user-friendly menggunakan teknologi terkini.
-                                </p>
-                                <p class="mt-4">
-                                    Anda akan bekerja secara kolaboratif dalam lingkungan agile, didampingi oleh mentor
-                                    profesional yang akan membantu mengembangkan skill teknis dan soft skill Anda.
-                                </p>
+                                <p>{{ job.description }}</p>
                             </section>
-                            <section>
+                            <section v-if="job.responsibilities && job.responsibilities.length > 0">
                                 <h3 class="text-lg font-bold text-slate-900 mb-4">Tanggung Jawab</h3>
                                 <ul class="list-disc pl-5 space-y-2 marker:text-slate-400">
-                                    <li>Mengimplementasikan desain UI/UX dari Figma menjadi kode frontend yang bersih
-                                        dan efisien.</li>
-                                    <li>Mengoptimalkan performa aplikasi untuk kecepatan maksimal dan skalabilitas.</li>
-                                    <li>Berkolaborasi dengan tim Backend untuk integrasi API dan manajemen state
-                                        aplikasi.</li>
-                                    <li>Melakukan debugging, troubleshooting, dan memastikan kompatibilitas lintas
-                                        browser.</li>
-                                    <li>Berpartisipasi aktif dalam code review dan daily stand-up meeting.</li>
+                                    <li v-for="item in job.responsibilities" :key="item">{{ item }}</li>
                                 </ul>
                             </section>
                         </div>
@@ -154,21 +198,25 @@ defineOptions({
                         <!-- Persyaratan -->
                         <div v-if="activeTab === 'Persyaratan'"
                             class="prose prose-slate prose-sm max-w-none text-slate-600 leading-relaxed">
-                            <section>
+                            <section v-if="job.requirements && job.requirements.length > 0">
                                 <h3 class="text-lg font-bold text-slate-900 mb-4">Kualifikasi Minimum</h3>
                                 <ul class="list-disc pl-5 space-y-2 marker:text-slate-400">
-                                    <li>Mahasiswa aktif semester akhir atau fresh graduate jurusan TI/SI.</li>
-                                    <li>Memahami dasar-dasar HTML5, CSS3, dan JavaScript (ES6+).</li>
-                                    <li>Familiar dengan framework React.js atau Vue.js adalah nilai plus.</li>
-                                    <li>Memiliki kemampuan problem solving yang baik dan eager to learn.</li>
+                                    <li v-for="item in job.requirements" :key="item">{{ item }}</li>
                                 </ul>
                             </section>
+                            <p v-else class="text-slate-500 italic">Persyaratan belum ditentukan.</p>
                         </div>
 
                         <!-- Benefit -->
                         <div v-if="activeTab === 'Benefit'"
                             class="prose prose-slate prose-sm max-w-none text-slate-600 leading-relaxed">
-                            <p>Benefit details placeholder...</p>
+                            <section v-if="job.benefits && job.benefits.length > 0">
+                                <h3 class="text-lg font-bold text-slate-900 mb-4">Benefit</h3>
+                                <ul class="list-disc pl-5 space-y-2 marker:text-slate-400">
+                                    <li v-for="item in job.benefits" :key="item">{{ item }}</li>
+                                </ul>
+                            </section>
+                            <p v-else class="text-slate-500 italic">Informasi benefit belum tersedia.</p>
                         </div>
 
                         <!-- Proses Seleksi -->
@@ -193,7 +241,7 @@ defineOptions({
                             </div>
                             <div>
                                 <p class="text-xs text-slate-500 font-medium mb-0.5">Lokasi</p>
-                                <p class="text-sm font-semibold text-slate-800">Surabaya (On-site)</p>
+                                <p class="text-sm font-semibold text-slate-800">{{ job.location || 'Surabaya' }} ({{ job.type }})</p>
                             </div>
                         </div>
                         <div class="flex items-start gap-3.5">
@@ -202,30 +250,48 @@ defineOptions({
                             </div>
                             <div>
                                 <p class="text-xs text-slate-500 font-medium mb-0.5">Durasi</p>
-                                <p class="text-sm font-semibold text-slate-800">3 - 6 Bulan</p>
+                                <p class="text-sm font-semibold text-slate-800">{{ job.duration || '3 - 6 Bulan' }}</p>
                             </div>
                         </div>
-                        <div class="flex items-start gap-3.5">
+                        <div v-if="job.deadline" class="flex items-start gap-3.5">
                             <div class="bg-slate-50 p-2 rounded-lg text-slate-400 shrink-0">
                                 <span class="material-symbols-outlined text-[20px]">event_busy</span>
                             </div>
                             <div>
                                 <p class="text-xs text-slate-500 font-medium mb-0.5">Batas Daftar</p>
-                                <p class="text-sm font-semibold text-slate-800">25 Agustus 2023</p>
+                                <p class="text-sm font-semibold text-slate-800">{{ job.deadline }}</p>
                             </div>
                         </div>
                     </div>
 
                     <div class="flex flex-col gap-3">
-                        <BaseButton variant="primary" size="lg" full>
-                            Daftar Sekarang
+                        <!-- Can apply: show button -->
+                        <BaseButton 
+                            v-if="job.status === 'open' && canApply"
+                            :href="isLoggedIn ? route('internship.apply', job.slug) : route('register')"
+                            variant="primary" 
+                            size="lg" 
+                            full
+                        >
+                            {{ isLoggedIn ? 'Daftar Sekarang' : 'Daftar & Login' }}
                         </BaseButton>
-                        <BaseButton variant="outline" size="lg" full>
+                        <!-- Cannot apply: has active application -->
+                        <div v-else-if="job.status === 'open' && !canApply && isLoggedIn" 
+                            class="bg-amber-50 border border-amber-200 rounded-lg p-4 text-center">
+                            <p class="text-amber-700 font-semibold">Lamaran Sedang Diproses</p>
+                            <p class="text-amber-600 text-sm mt-1">Anda sudah memiliki lamaran aktif. Tunggu pengumuman terlebih dahulu.</p>
+                        </div>
+                        <!-- Job closed -->
+                        <div v-else-if="job.status !== 'open'" class="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+                            <p class="text-red-700 font-semibold">Lowongan Ditutup</p>
+                            <p class="text-red-600 text-sm mt-1">Pendaftaran sudah tidak tersedia</p>
+                        </div>
+                        <BaseButton @click="shareJob" variant="outline" size="lg" full>
                             <span class="material-symbols-outlined">share</span>
                             Bagikan
                         </BaseButton>
                     </div>
-                    <div class="mt-4 text-center">
+                    <div v-if="!isLoggedIn && job.status === 'open'" class="mt-4 text-center">
                         <p class="text-base text-slate-400">
                             Buat akun & login untuk melamar.
                         </p>
@@ -244,10 +310,19 @@ defineOptions({
                 </span>
             </div>
             <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <JobStatCard v-for="stat in stats" :key="stat.label" v-bind="stat" />
+                <JobStatCard v-for="stat in statItems" :key="stat.label" v-bind="stat" />
             </div>
         </div>
     </div>
+
+    <!-- Share Toast Notification -->
+    <Transition name="toast">
+        <div v-if="shareToast" 
+            class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-xl shadow-xl flex items-center gap-3 z-50">
+            <span class="material-symbols-outlined text-green-400">check_circle</span>
+            <span class="font-medium">{{ shareToastMessage }}</span>
+        </div>
+    </Transition>
 </template>
 
 <style scoped>
@@ -258,5 +333,17 @@ defineOptions({
 .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+}
+
+/* Toast transitions */
+.toast-enter-active,
+.toast-leave-active {
+    transition: all 0.3s ease;
+}
+
+.toast-enter-from,
+.toast-leave-to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
 }
 </style>

@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -29,15 +30,25 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        
+        $user->fill([
+            'name' => $request->name,
+            'phone' => $request->phone,
+        ]);
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        if ($request->hasFile('avatar')) {
+            if ($user->avatar && !str_starts_with($user->avatar, 'https://')) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+            
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $user->avatar = '/storage/' . $path;
         }
 
-        $request->user()->save();
+        $user->save();
 
-        return Redirect::route('profile.edit');
+        return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
     /**
@@ -52,6 +63,10 @@ class ProfileController extends Controller
         $user = $request->user();
 
         Auth::logout();
+
+        if ($user->avatar && !str_starts_with($user->avatar, 'https://')) {
+            Storage::disk('public')->delete(str_replace('/storage/', '', $user->avatar));
+        }
 
         $user->delete();
 

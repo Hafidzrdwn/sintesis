@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Auth\GoogleController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\JobController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -12,13 +14,9 @@ use Inertia\Inertia;
 |--------------------------------------------------------------------------
 */
 
-Route::get('/', function () {
-    return Inertia::render('LandingPage');
-});
+Route::get('/', [JobController::class, 'landing']);
 
-Route::get('/lowongan/detail', function () {
-    return Inertia::render('JobDetailPage');
-})->name('job.detail');
+Route::get('/lowongan/{slug}', [JobController::class, 'show'])->name('job.detail');
 
 /*
 |--------------------------------------------------------------------------
@@ -46,13 +44,14 @@ Route::get('/internal/login', function () {
 |--------------------------------------------------------------------------
 */
 
-Route::get('/dashboard', function () {
-    return Inertia::render('CandidateDashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::get('/internship/apply', function () {
-    return Inertia::render('InternshipApplication');
-})->middleware(['auth', 'verified'])->name('internship.apply');
+Route::get('/internship/apply/{slug?}', [JobController::class, 'apply'])
+    ->middleware(['auth', 'verified'])->name('internship.apply');
+
+Route::post('/internship/apply', [App\Http\Controllers\ApplicantController::class, 'store'])
+    ->middleware(['auth', 'verified'])->name('internship.store');
 
 /*
 |--------------------------------------------------------------------------
@@ -146,7 +145,7 @@ Route::middleware(['auth', 'verified', 'active', 'role:admin'])->prefix('admin')
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 

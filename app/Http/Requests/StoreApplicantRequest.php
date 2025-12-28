@@ -5,29 +5,20 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-/**
- * StoreApplicantRequest
- * 
- * Validates internship application data from public portal.
- */
 class StoreApplicantRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        return true; // Public portal - anyone can apply
+        return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
+            // Job selection
+            'job_id' => ['required', 'uuid', 'exists:job_listings,id'],
+            
+            // Step 1: Identitas
             'full_name' => ['required', 'string', 'min:3', 'max:255'],
             'email' => [
                 'required', 
@@ -35,49 +26,74 @@ class StoreApplicantRequest extends FormRequest
                 'max:255',
                 Rule::unique('applicants', 'email')->whereNull('deleted_at'),
             ],
-            'phone' => ['nullable', 'string', 'max:20'],
-            'birth_date' => ['nullable', 'date', 'before:today'],
-            'gender' => ['nullable', 'in:male,female'],
-            'address' => ['nullable', 'string', 'max:1000'],
-            'university' => ['nullable', 'string', 'max:255'],
-            'major' => ['nullable', 'string', 'max:255'],
-            'semester' => ['nullable', 'string', 'max:50'],
-            'position_applied' => ['required', 'string', 'max:255'],
-            'cv_path' => ['required', 'file', 'mimes:pdf,doc,docx', 'max:10240'], // Max 10MB
+            'phone' => ['required', 'string', 'max:20'],
+            'university' => ['required', 'string', 'max:255'],
+            'referral' => ['nullable', 'string', 'max:255'],
+            
+            // Step 2: Kompetensi
+            'skills' => ['nullable', 'array'],
+            'skills.*' => ['string'],
+            'other_skills' => ['nullable', 'string', 'max:500'],
+            'databases' => ['nullable', 'array'],
+            'databases.*' => ['string'],
+            'other_databases' => ['nullable', 'string', 'max:500'],
+            'operating_systems' => ['nullable', 'array'],
+            'operating_systems.*' => ['string'],
+            'other_os' => ['nullable', 'string', 'max:500'],
+            
+            // Step 3: Minat
+            'other_interest' => ['nullable', 'string', 'max:500'],
+            'demo_required' => ['nullable', 'boolean'],
+            'self_description' => ['required', 'string', 'min:20', 'max:5000'],
             'portfolio_url' => ['nullable', 'url', 'max:500'],
-            'motivation' => ['nullable', 'string', 'max:5000'],
+            
+            // Step 4: Dokumen
+            'start_date' => ['required', 'date', 'after_or_equal:today'],
+            'end_date' => ['required', 'date', 'after:start_date'],
+            'letter_file' => ['required', 'file', 'mimes:pdf', 'max:2048'],
+            'id_card_file' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:2048'],
+            'cv_file' => ['required', 'file', 'mimes:pdf', 'max:2048'],
         ];
     }
 
-    /**
-     * Get custom attributes for validator errors.
-     *
-     * @return array<string, string>
-     */
-    public function attributes(): array
-    {
-        return [
-            'full_name' => 'full name',
-            'birth_date' => 'date of birth',
-            'position_applied' => 'position',
-            'cv_path' => 'CV/Resume',
-            'portfolio_url' => 'portfolio URL',
-        ];
-    }
-
-    /**
-     * Get the error messages for the defined validation rules.
-     *
-     * @return array<string, string>
-     */
     public function messages(): array
     {
         return [
-            'email.unique' => 'This email has already been used for an application.',
-            'cv_path.required' => 'Please upload your CV/Resume.',
-            'cv_path.mimes' => 'CV must be a PDF or Word document.',
-            'cv_path.max' => 'CV file size cannot exceed 10MB.',
-            'portfolio_url.url' => 'Please enter a valid portfolio URL.',
+            'job_id.required' => 'Silakan pilih posisi yang ingin dilamar.',
+            'job_id.exists' => 'Posisi yang dipilih tidak valid.',
+            
+            'full_name.required' => 'Nama lengkap wajib diisi.',
+            'full_name.min' => 'Nama lengkap minimal 3 karakter.',
+            
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.unique' => 'Email ini sudah digunakan untuk melamar sebelumnya.',
+            
+            'phone.required' => 'Nomor WhatsApp wajib diisi.',
+            
+            'university.required' => 'Nama sekolah/universitas wajib diisi.',
+            
+            'self_description.required' => 'Deskripsi diri wajib diisi.',
+            'self_description.min' => 'Deskripsi diri minimal 20 karakter.',
+            
+            'start_date.required' => 'Tanggal mulai magang wajib diisi.',
+            'start_date.after_or_equal' => 'Tanggal mulai harus hari ini atau setelahnya.',
+            'end_date.required' => 'Tanggal berakhir magang wajib diisi.',
+            'end_date.after' => 'Tanggal berakhir harus setelah tanggal mulai.',
+            
+            'letter_file.required' => 'Surat izin magang wajib diunggah.',
+            'letter_file.mimes' => 'Surat izin harus dalam format PDF.',
+            'letter_file.max' => 'Ukuran surat izin maksimal 2MB.',
+            
+            'id_card_file.required' => 'Kartu pelajar/KTM wajib diunggah.',
+            'id_card_file.mimes' => 'Kartu pelajar harus dalam format PDF, JPG, atau PNG.',
+            'id_card_file.max' => 'Ukuran kartu pelajar maksimal 2MB.',
+            
+            'cv_file.required' => 'CV/Resume wajib diunggah.',
+            'cv_file.mimes' => 'CV harus dalam format PDF.',
+            'cv_file.max' => 'Ukuran CV maksimal 2MB.',
+            
+            'portfolio_url.url' => 'Format URL portofolio tidak valid.',
         ];
     }
 }
