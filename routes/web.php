@@ -128,9 +128,12 @@ Route::middleware(['auth', 'verified', 'active', 'role:admin'])->prefix('admin')
     Route::get('/recruitment/{applicant}', [App\Http\Controllers\Admin\RecruitmentController::class, 'show'])->name('admin.recruitment.show');
     Route::patch('/recruitment/{applicant}/status', [App\Http\Controllers\Admin\RecruitmentController::class, 'updateStatus'])->name('admin.recruitment.update-status');
 
-    Route::get('/users', function () {
-        return Inertia::render('Admin/UserManagement');
-    })->name('admin.users');
+    // User Management routes
+    Route::get('/users', [App\Http\Controllers\Admin\UserManagementController::class, 'index'])->name('admin.users');
+    Route::post('/users', [App\Http\Controllers\Admin\UserManagementController::class, 'store'])->name('admin.users.store');
+    Route::get('/users/{user}', [App\Http\Controllers\Admin\UserManagementController::class, 'show'])->name('admin.users.show');
+    Route::put('/users/{user}', [App\Http\Controllers\Admin\UserManagementController::class, 'update'])->name('admin.users.update');
+    Route::delete('/users/{user}', [App\Http\Controllers\Admin\UserManagementController::class, 'destroy'])->name('admin.users.destroy');
 
     Route::get('/monitoring', function () {
         return Inertia::render('Admin/GlobalMonitoring');

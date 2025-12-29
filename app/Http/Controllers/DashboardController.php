@@ -17,9 +17,9 @@ class DashboardController extends Controller
         $user = $request->user();
         $status = $user->getApplicationStatus();
 
-        if ($status === 'active_intern') {
+        if ($status === 'accepted' || $user->hasActiveInternship()) {
             $internship = $user->currentInternship();
-            
+
             return Inertia::render('InternDashboard', [
                 'internship' => $internship ? [
                     'id' => $internship->id,

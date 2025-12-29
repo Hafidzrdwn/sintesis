@@ -89,14 +89,11 @@ class User extends Authenticatable implements MustVerifyEmail
         };
     }
 
+    // user sudah terdaftar jadi anak magang, 
+    // status: active, completed, terminated, extended
     public function internshipsAsIntern(): HasMany
     {
         return $this->hasMany(Internship::class, 'intern_id');
-    }
-
-    public function internshipsAsMentor(): HasMany
-    {
-        return $this->hasMany(Internship::class, 'mentor_id');
     }
 
     public function presences(): HasMany
@@ -129,12 +126,12 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(AuditLog::class);
     }
 
+    // data magang intern (current)
     public function currentInternship()
     {
         return $this->internshipsAsIntern()
             ->where('status', 'active')
-            ->where('start_date', '<=', now())
-            ->where('end_date', '>=', now())
+            ->orWhere('status', 'extended')
             ->first();
     }
 
@@ -166,10 +163,6 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function getApplicationStatus(): string
     {
-        if ($this->hasActiveInternship()) {
-            return 'active_intern';
-        }
-
         $applicant = $this->applicant();
         
         if (!$applicant) {
@@ -179,13 +172,17 @@ class User extends Authenticatable implements MustVerifyEmail
         return match ($applicant->status) {
             'accepted' => 'accepted',
             'rejected' => 'rejected',
-            default => 'pending', // pending, reviewed, interview
+            'reviewed' => 'reviewed',
+            'interview' => 'interview',
+            default => 'pending',
         };
     }
 
     public function canApply(): bool
     {
         $status = $this->getApplicationStatus();
-        return in_array($status, ['none', 'rejected']);
+        $isNotActiveIntern = !$this->hasActiveInternship();
+
+        return in_array($status, ['none', 'rejected']) && $isNotActiveIntern;
     }
 }

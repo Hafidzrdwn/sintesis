@@ -23,8 +23,8 @@ class Internship extends Model
         'intern_id',
         'mentor_id',
         'applicant_id',
-        'position',
-        'department',
+        'job_id',
+        'custom_position',
         'start_date',
         'end_date',
         'status',
@@ -126,6 +126,22 @@ class Internship extends Model
     public function applicant(): BelongsTo
     {
         return $this->belongsTo(Applicant::class);
+    }
+
+    /**
+     * The job for this internship
+     */
+    public function job(): BelongsTo
+    {
+        return $this->belongsTo(Job::class);
+    }
+
+    /**
+     * Get the position (custom_position or job title)
+     */
+    public function getPositionAttribute(): ?string
+    {
+        return $this->custom_position ?? $this->job?->title;
     }
 
     /**

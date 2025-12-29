@@ -28,8 +28,9 @@ class CheckRole
 
         if ($user->role === 'intern' && in_array('intern', $roles)) {
             $status = $user->getApplicationStatus();
-            if ($status !== 'active_intern') {
-                return redirect('/dashboard')->with('error', 'Anda belum memiliki akses ke halaman ini. Silakan tunggu proses seleksi selesai.');
+
+            if ($status !== 'accepted' && !$user->hasActiveInternship()) {
+                return redirect('/dashboard');
             }
         }
 
@@ -40,16 +41,16 @@ class CheckRole
      * Redirect user to their appropriate dashboard based on role
      */
     private function redirectToUserDashboard($user)
-    {
-        $message = 'Anda tidak memiliki akses ke halaman tersebut.';
-        
+    {        
         return match ($user->role) {
-            'admin' => redirect('/admin/dashboard')->with('error', $message),
-            'mentor' => redirect('/mentor/dashboard')->with('error', $message),
-            'intern' => $user->getApplicationStatus() === 'active_intern' 
-                ? redirect('/intern/dashboard')->with('error', $message)
-                : redirect('/dashboard')->with('error', $message),
-            default => redirect('/dashboard')->with('error', $message),
+            'admin' => redirect('/admin/dashboard'),
+            'mentor' => redirect('/mentor/dashboard'),
+            'intern' => (
+                $user->getApplicationStatus() === 'accepted' 
+                || $user->hasActiveInternship()) 
+                ? redirect('/intern/dashboard')
+                : redirect('/dashboard'),
+            default => redirect('/dashboard'),
         };
     }
 }
