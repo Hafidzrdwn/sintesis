@@ -275,8 +275,8 @@ const getUserAvatar = (applicant) => {
                                     <img v-if="getUserAvatar(applicant)" 
                                         :src="getUserAvatar(applicant)" 
                                         :alt="applicant.full_name"
-                                        class="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-sm" />
-                                    <div v-else class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
+                                        class="size-12 rounded-full object-cover object-top ring-2 ring-white shadow-sm" />
+                                    <div v-else class="size-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
                                         {{ getInitials(applicant.full_name) }}
                                     </div>
                                     <div>
@@ -364,8 +364,8 @@ const getUserAvatar = (applicant) => {
                             <img v-if="getUserAvatar(selectedApplicant)" 
                                 :src="getUserAvatar(selectedApplicant)" 
                                 :alt="selectedApplicant.full_name"
-                                class="w-20 h-20 rounded-full object-cover border-4 border-white shadow-sm flex-shrink-0" />
-                            <div v-else class="w-20 h-20 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-2xl border-4 border-white shadow-sm flex-shrink-0">
+                                class="size-24 rounded-full object-cover object-top border-4 border-white shadow-sm flex-shrink-0" />
+                            <div v-else class="size-24 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-2xl border-4 border-white shadow-sm flex-shrink-0">
                                 {{ getInitials(selectedApplicant.full_name) }}
                             </div>
                             <div class="flex-1 min-w-0">
