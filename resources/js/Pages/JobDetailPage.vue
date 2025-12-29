@@ -5,6 +5,7 @@ import LandingLayout from '@/Layouts/LandingLayout.vue';
 import ProcessStepCard from '@/Components/Landing/ProcessStepCard.vue';
 import JobStatCard from '@/Components/Landing/JobStatCard.vue';
 import BaseButton from '@/Components/BaseButton.vue';
+import { formatDate } from '@/utils/helpers';
 
 const props = defineProps({
     job: {
@@ -50,7 +51,7 @@ const shareJob = async () => {
             });
             return;
         } catch (err) {
-            // User cancelled or share failed, fallback to copy
+            console.error('Share failed:', err);
         }
     }
     
@@ -259,7 +260,7 @@ defineOptions({
                             </div>
                             <div>
                                 <p class="text-xs text-slate-500 font-medium mb-0.5">Batas Daftar</p>
-                                <p class="text-sm font-semibold text-slate-800">{{ job.deadline }}</p>
+                                <p class="text-sm font-semibold text-slate-800">{{ formatDate(job.deadline) }}</p>
                             </div>
                         </div>
                     </div>

@@ -8,6 +8,7 @@ import ProcessStepCard from '@/Components/Landing/ProcessStepCard.vue';
 import TestimonialCard from '@/Components/Landing/TestimonialCard.vue';
 import StatItem from '@/Components/Landing/StatItem.vue';
 import { onMounted, onUnmounted, computed } from 'vue';
+import { formatRelativeTime } from '@/utils/helpers';
 
 defineProps({
     jobs: {
@@ -188,7 +189,6 @@ onUnmounted(() => {
                 </div>
             </div>
 
-            <!-- Dynamic Jobs from Database -->
             <div v-if="jobs.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <div v-for="(job, index) in jobs" :key="job.id" class="reveal-on-scroll"
                     :class="`stagger-${(index % 3) + 1}`">
@@ -197,7 +197,7 @@ onUnmounted(() => {
                         :type="job.type"
                         :status="job.statusLabel"
                         :description="job.description"
-                        :updatedAt="job.updatedAt"
+                        :updatedAt="formatRelativeTime(job.updatedAt)"
                         :image="job.image"
                         :href="job.href"
                     />

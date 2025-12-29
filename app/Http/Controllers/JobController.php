@@ -34,7 +34,7 @@ class JobController extends Controller
                 'location' => $job->location,
                 'duration' => $job->duration,
                 'image' => $job->image,
-                'updatedAt' => $job->updated_at->diffForHumans(),
+                'updatedAt' => $job->updated_at,
                 'href' => '/lowongan/' . $job->slug,
             ];
         });
@@ -55,7 +55,7 @@ class JobController extends Controller
         $stats = [
             'total' => $job->applicants()->count(),
             'pending' => $job->applicants()->where('status', 'pending')->count(),
-            'reviewed' => $job->applicants()->where('status', 'reviewed')->count(),
+            'reviewed' => $job->applicants()->where('status', 'reviewed')->orWhere('status', 'interview')->count(),
             'rejected' => $job->applicants()->where('status', 'rejected')->count(),
             'accepted' => $job->applicants()->where('status', 'accepted')->count(),
         ];
@@ -74,7 +74,7 @@ class JobController extends Controller
                 'requirements' => $job->requirements ?? [],
                 'benefits' => $job->benefits ?? [],
                 'duration' => $job->duration,
-                'deadline' => $job->formatted_deadline,
+                'deadline' => $job->deadline,
                 'image' => $job->image,
             ],
             'stats' => $stats,

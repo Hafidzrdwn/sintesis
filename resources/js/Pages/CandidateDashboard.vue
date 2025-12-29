@@ -3,11 +3,12 @@ import BaseButton from '@/Components/BaseButton.vue';
 import LandingLayout from '@/Layouts/LandingLayout.vue';
 import { Head, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import { formatDate, formatDateTime } from '@/utils/helpers';
 
 const props = defineProps({
     applicationStatus: {
         type: String,
-        default: 'none', // 'none' | 'pending' | 'accepted' | 'rejected'
+        default: 'none', 
     },
     application: {
         type: Object,
@@ -36,7 +37,7 @@ const statusConfig = {
         label: 'Jadwal Interview',
         color: 'purple',
         icon: 'groups',
-        message: 'Selamat! Anda lolos ke tahap interview. Silakan cek email untuk detail jadwal.',
+        message: 'Selamat! Anda lolos ke tahap interview. Silakan hubungi HR (nomor tersedia di bagian bantuan) untuk detail jadwal.',
     },
     accepted: {
         label: 'Diterima',
@@ -72,7 +73,7 @@ defineOptions({
             <div>
                 <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Dashboard Calon Intern</h1>
                 <p class="mt-1 text-md text-gray-500">
-                    {{ applicationStatus === 'none' ? 'Mulai perjalanan magang Anda bersama kami.' : 'Pantau status lamaran aktif Anda dan langkah selanjutnya.' }}
+                    {{ applicationStatus === 'none' ? 'Mulai perjalanan magang Anda bersama kami.' : 'Pantau status lamaran aktif dan langkah selanjutnya dengan refresh halaman ini.' }}
                 </p>
             </div>
             <div class="flex items-center gap-2">
@@ -142,7 +143,7 @@ defineOptions({
                                     <h2 class="text-xl font-bold text-gray-900 leading-tight">
                                         {{ application?.position_applied || 'Posisi Magang' }}
                                     </h2>
-                                    <p class="text-sm text-gray-500 mt-1">Diajukan: {{ application?.created_at }}</p>
+                                    <p class="text-sm text-gray-500 mt-1">Diajukan: {{ formatDateTime(application?.created_at) }}</p>
                                 </div>
                             </div>
 
@@ -156,7 +157,7 @@ defineOptions({
                                     <span class="material-symbols-outlined text-[18px]">{{ currentStatus.icon }}</span>
                                     {{ currentStatus.label }}
                                 </h3>
-                                <p :class="`text-xs text-${currentStatus.color}-800 mt-1.5 leading-relaxed`">
+                                <p :class="`text-sm text-${currentStatus.color}-800 mt-1.5 leading-relaxed`">
                                     {{ currentStatus.message }}
                                 </p>
                             </div>
@@ -164,8 +165,8 @@ defineOptions({
                             <!-- Application Info -->
                             <div class="grid grid-cols-2 gap-y-4 gap-x-8 text-sm border-t border-gray-200 pt-5 mt-auto">
                                 <div>
-                                    <p class="text-gray-500 text-xs uppercase font-bold tracking-wider mb-1">Tanggal Melamar</p>
-                                    <p class="font-semibold text-gray-900">{{ application?.created_at }}</p>
+                                    <p class="text-gray-500 text-xs uppercase font-bold tracking-wider mb-1">Tanggal Magang</p>
+                                    <p class="font-semibold text-gray-900">{{ formatDate(application?.start_date) + ' - ' + formatDate(application?.end_date) }}</p>
                                 </div>
                                 <div>
                                     <p class="text-gray-500 text-xs uppercase font-bold tracking-wider mb-1">Asal Universitas</p>
@@ -206,7 +207,7 @@ defineOptions({
                                 </div>
                                 <div>
                                     <p class="text-md font-bold text-gray-900">Lamaran Terkirim</p>
-                                    <p class="text-sm text-gray-500 mt-0.5 font-medium">{{ application?.created_at }}</p>
+                                    <p class="text-sm text-gray-500 mt-0.5 font-medium">{{ formatDateTime(application?.created_at) }}</p>
                                 </div>
                             </div>
 
@@ -233,7 +234,7 @@ defineOptions({
                                         class="inline-flex mt-1 items-center px-2 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-100">
                                         Sedang Berlangsung
                                     </span>
-                                    <p v-else class="text-sm text-gray-500 mt-0.5">{{ application?.reviewed_at || 'Selesai' }}</p>
+                                    <p v-else class="text-sm text-gray-500 mt-0.5">{{ formatDateTime(application?.reviewed_at) || 'Selesai' }}</p>
                                 </div>
                             </div>
 
@@ -263,7 +264,7 @@ defineOptions({
                                     </p>
                                     <p class="text-sm text-gray-400 mt-0.5">
                                         {{ application?.status === 'accepted' || application?.status === 'rejected' 
-                                            ? application?.reviewed_at 
+                                            ? formatDateTime(application?.reviewed_at) 
                                             : 'Menunggu jadwal' }}
                                     </p>
                                 </div>

@@ -46,9 +46,11 @@ class DashboardController extends Controller
                 'id' => $applicant->id,
                 'position_applied' => $applicant->position_applied,
                 'status' => $applicant->status,
-                'created_at' => $applicant->created_at->format('d F Y H:i A'),
-                'reviewed_at' => $applicant->reviewed_at?->format('d F Y H:i A'),
+                'created_at' => $applicant->created_at,
+                'reviewed_at' => $applicant->reviewed_at,
                 'notes' => $applicant->notes,
+                'start_date' => $applicant->start_date,
+                'end_date' => $applicant->end_date,
                 'university' => $applicant->university,
             ] : null,
         ]);

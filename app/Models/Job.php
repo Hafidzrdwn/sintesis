@@ -132,18 +132,6 @@ class Job extends Model
     }
 
     /**
-     * Get formatted deadline
-     */
-    public function getFormattedDeadlineAttribute(): ?string
-    {
-        return $this->deadline?->format('d F Y');
-    }
-
-    // ========================================
-    // RELATIONSHIPS
-    // ========================================
-
-    /**
      * Applicants for this job
      */
     public function applicants(): HasMany
