@@ -4,6 +4,7 @@ import { usePage, router, Link } from '@inertiajs/vue3';
 import BaseButton from '@/Components/BaseButton.vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import LogoutConfirmModal from '@/Components/LogoutConfirmModal.vue';
+import { getInitials, getAvatarUrl } from '@/utils/helpers';
 
 const isMobileMenuOpen = ref(false);
 const showLogoutModal = ref(false);
@@ -61,6 +62,10 @@ const isLoggedIn = computed(() => {
 const user = computed(() => {
     return page.props.auth.user;
 });
+
+const getUserAvatar = (user) => {
+    return user?.avatar ? getAvatarUrl(user) : null;
+};
 </script>
 
 <template>
@@ -90,11 +95,11 @@ const user = computed(() => {
                                     </p>
                                     <p class="text-xs text-gray-500 mt-1">Calon Intern</p>
                                 </div>
-                                <img v-if="user.avatar" :src="user.avatar" alt="Avatar"
-                                    class="h-10 w-10 rounded-full bg-primary/10 ring-2 ring-white shadow-sm flex items-center justify-center text-primary font-bold text-lg">
+                                <img v-if="getUserAvatar(user)" :src="getUserAvatar(user)" :alt="user.name"
+                                    class="h-10 w-10 object-cover object-top rounded-full bg-primary/10 ring-2 ring-white shadow-sm flex items-center justify-center text-primary font-bold text-lg">
                                 <div v-else
                                     class="h-10 w-10 rounded-full bg-primary/10 ring-2 ring-white shadow-sm flex items-center justify-center text-primary font-bold text-lg">
-                                    {{ user.name.charAt(0).toUpperCase() }}
+                                    {{ getInitials(user.name) }}
                                 </div>
                             </div>
                             <span class="material-symbols-outlined text-gray-400">keyboard_arrow_down</span>
@@ -165,9 +170,11 @@ const user = computed(() => {
             </div>
             <div v-else class="px-4 py-4 space-y-5">
                 <div class="flex gap-3 items-center justify-start">
-                    <div
+                    <img v-if="getUserAvatar(user)" :src="getUserAvatar(user)" :alt="user.name"
+                    class="h-10 w-10 object-cover object-top rounded-full bg-primary/10 ring-2 ring-white shadow-sm flex items-center justify-center text-primary font-bold text-lg">
+                    <div v-else
                         class="h-10 w-10 rounded-full bg-primary/10 ring-2 ring-white shadow-sm flex items-center justify-center text-primary font-bold text-lg">
-                        {{ user.name.charAt(0) }}
+                        {{ getInitials(user.name) }}
                     </div>
                     <div class="text-left">
                         <p class="text-sm font-bold text-gray-900 leading-none">

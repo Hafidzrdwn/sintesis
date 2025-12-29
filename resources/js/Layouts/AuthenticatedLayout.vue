@@ -3,6 +3,7 @@ import { Link, usePage } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import { X } from 'lucide-vue-next';
 import LogoutConfirmModal from '@/Components/LogoutConfirmModal.vue';
+import { getInitials, getAvatarUrl } from '@/utils/helpers';
 
 const showMobileMenu = ref(false);
 const showLogoutModal = ref(false);
@@ -58,6 +59,10 @@ const isActive = (prefix) => {
 };
 
 const isSettingsActive = computed(() => page.url === '/profile');
+
+const getUserAvatar = (user) => {
+    return user?.avatar ? getAvatarUrl(user) : null;
+};
 </script>
 
 <template>
@@ -81,10 +86,13 @@ const isSettingsActive = computed(() => page.url === '/profile');
                     <!-- Mobile Navigation -->
                     <div class="flex flex-col h-full justify-between overflow-y-auto">
                         <div class="flex flex-col gap-6">
-                            <!-- User Profile Mobile -->
                              <div class="flex items-center gap-4 px-2 p-3 bg-slate-50 rounded-2xl border border-slate-100">
-                                <div class="bg-center bg-no-repeat bg-cover rounded-full size-10 ring-2 ring-white flex items-center justify-center bg-slate-200 text-slate-500 font-bold text-lg uppercase">
-                                    {{ user.name.charAt(0) }}
+                                <img v-if="getUserAvatar(user)" :src="getUserAvatar(user)"
+                                    :alt="user.name"
+                                    class="size-10 ring-2 object-cover object-top ring-white flex items-center justify-center bg-slate-200 text-slate-500 font-bold text-lg uppercase"    
+                                >
+                                <div v-else class="bg-center bg-no-repeat bg-cover rounded-full size-10 ring-2 ring-white flex items-center justify-center bg-slate-200 text-slate-500 font-bold text-lg uppercase">
+                                    {{ getInitials(user.name) }}
                                 </div>
                                 <div class="flex flex-col">
                                     <h1 class="text-text-main text-sm font-bold leading-tight line-clamp-1">{{ user.name }}</h1>
@@ -122,17 +130,19 @@ const isSettingsActive = computed(() => page.url === '/profile');
                             </button>
                         </div>
                     </div>
-                </div>
+            </div>
             </div>
 
             <!-- Sidebar (Desktop) -->
             <aside class="hidden lg:flex flex-col w-72 h-full bg-card-white border-r border-slate-200 p-6 flex-shrink-0 z-20 shadow-sm relative">
                 <div class="flex flex-col h-full justify-between">
                     <div class="flex flex-col gap-8">
-                        <!-- User Profile -->
                         <div class="flex items-center gap-4 px-2">
-                            <div class="bg-center bg-no-repeat bg-cover rounded-full size-12 ring-2 ring-slate-100 flex items-center justify-center bg-slate-200 text-slate-500 font-bold text-xl uppercase">
-                                {{ user.name.charAt(0) }}
+                            <img v-if="getUserAvatar(user)" :src="getUserAvatar(user)" :alt="user.name"
+                                class="size-12 ring-2 object-cover object-top ring-white flex items-center justify-center bg-slate-200 text-slate-500 font-bold text-lg uppercase">
+                            <div v-else
+                                class="bg-center bg-no-repeat bg-cover rounded-full size-12 ring-2 ring-white flex items-center justify-center bg-slate-200 text-slate-500 font-bold text-lg uppercase">
+                                {{ getInitials(user.name) }}
                             </div>
                             <div class="flex flex-col">
                                 <h1 class="text-text-main text-base font-bold leading-tight">{{ user.name }}</h1>

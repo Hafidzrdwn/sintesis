@@ -4,6 +4,7 @@ import { Head, useForm, usePage, Link, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import LandingLayout from '@/Layouts/LandingLayout.vue';
 import BaseButton from '@/Components/BaseButton.vue';
+import { getInitials, getAvatarUrl } from '@/utils/helpers';
 
 const page = usePage();
 const user = computed(() => page.props.auth.user);
@@ -48,6 +49,7 @@ const deleteForm = useForm({
 
 const handleAvatarChange = (e) => {
     const file = e.target.files[0];
+    console.log(file)
     if (file) {
         form.avatar = file;
         avatarPreview.value = URL.createObjectURL(file);
@@ -96,10 +98,10 @@ const deleteAccount = () => {
     });
 };
 
-const displayAvatar = computed(() => {
-    if (avatarPreview.value) return avatarPreview.value;
-    return user.value.avatar;
-});
+const getUserAvatar = (user) => {
+    if(avatarPreview.value) return avatarPreview.value
+    return user?.avatar ? getAvatarUrl(user) : null;
+};
 
 const isInternal = computed(() => {
     return props.applicationStatus === 'active_intern' || ['admin', 'mentor'].includes(user.value?.role);
@@ -162,11 +164,11 @@ const isInternal = computed(() => {
                         <label class="block text-sm font-semibold text-slate-700 mb-3">Foto Profil</label>
                         <div class="flex items-center gap-6">
                             <div class="relative group cursor-pointer" @click="triggerAvatarInput">
-                                <img v-if="displayAvatar" :src="displayAvatar" alt="Avatar"
-                                    class="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg" />
+                                <img v-if="getUserAvatar(user)" :src="getUserAvatar(user)" :alt="user.name"
+                                    class="w-24 h-24 rounded-full object-cover object-top border-4 border-white shadow-lg" />
                                 <div v-else
                                     class="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center text-primary text-3xl font-bold border-4 border-white shadow-lg">
-                                    {{ user.name.charAt(0).toUpperCase() }}
+                                    {{ getInitials(user.name) }}
                                 </div>
                                 <div class="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                     <span class="material-symbols-outlined text-white text-2xl">photo_camera</span>
@@ -207,7 +209,6 @@ const isInternal = computed(() => {
                         <p v-if="form.errors.username" class="text-red-500 text-sm mt-1">{{ form.errors.username }}</p>
                     </div>
 
-                    <!-- Email (Display Only) -->
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-2">
                             Alamat Email
