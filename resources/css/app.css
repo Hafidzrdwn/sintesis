@@ -23,6 +23,8 @@
     --color-success-hover: #0e9e6d;
     --color-danger: #EF4444;
     --color-danger-hover: #dc2626;
+    --color-warning: #D97706;
+    --color-warning-hover: #d96306;
 
     --animate-fade-in-up: fade-in-up 0.8s ease-out forwards;
     --animate-float: float 6s ease-in-out infinite;

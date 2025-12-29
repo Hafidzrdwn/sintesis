@@ -47,12 +47,12 @@ class ApplicantController extends Controller
         
         // Create the applicant
         Applicant::create([
+            'user_id' => $user->id,
             'job_id' => $validated['job_id'],
             'position_applied' => $job->title,
             
             // Step 1: Identity
             'full_name' => $validated['full_name'],
-            'email' => $validated['email'],
             'phone' => $validated['phone'],
             'university' => $validated['university'],
             'referral' => $validated['referral'] ?? null,

@@ -14,10 +14,10 @@ class Applicant extends Model
     use HasFactory, HasUuids, SoftDeletes, Auditable;
 
     protected $fillable = [
+        'user_id',
         'job_id',
         // Step 1: Identity
         'full_name',
-        'email',
         'phone',
         'university',
         'referral',
@@ -45,7 +45,6 @@ class Applicant extends Model
         
         // Meta
         'position_applied',
-        'motivation',
         'status',
         'notes',
         'reviewed_by',
@@ -104,5 +103,10 @@ class Applicant extends Model
     public function job(): BelongsTo
     {
         return $this->belongsTo(Job::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }

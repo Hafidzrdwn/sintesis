@@ -123,9 +123,10 @@ Route::middleware(['auth', 'verified', 'active', 'role:admin'])->prefix('admin')
         return Inertia::render('Admin/Dashboard');
     })->name('admin.dashboard');
 
-    Route::get('/recruitment', function () {
-        return Inertia::render('Admin/Recruitment');
-    })->name('admin.recruitment');
+    // Recruitment routes
+    Route::get('/recruitment', [App\Http\Controllers\Admin\RecruitmentController::class, 'index'])->name('admin.recruitment');
+    Route::get('/recruitment/{applicant}', [App\Http\Controllers\Admin\RecruitmentController::class, 'show'])->name('admin.recruitment.show');
+    Route::patch('/recruitment/{applicant}/status', [App\Http\Controllers\Admin\RecruitmentController::class, 'updateStatus'])->name('admin.recruitment.update-status');
 
     Route::get('/users', function () {
         return Inertia::render('Admin/UserManagement');

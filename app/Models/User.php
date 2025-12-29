@@ -156,7 +156,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function applicant()
     {
-        return Applicant::where('email', $this->email)->latest()->first();
+        return Applicant::where('user_id', $this->id)->latest()->first();
     }
 
     public function hasActiveInternship(): bool
