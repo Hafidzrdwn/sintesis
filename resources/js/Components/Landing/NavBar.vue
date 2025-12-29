@@ -3,8 +3,10 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { usePage, router, Link } from '@inertiajs/vue3';
 import BaseButton from '@/Components/BaseButton.vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
+import LogoutConfirmModal from '@/Components/LogoutConfirmModal.vue';
 
 const isMobileMenuOpen = ref(false);
+const showLogoutModal = ref(false);
 const page = usePage();
 
 const toggleMobileMenu = () => {
@@ -36,8 +38,9 @@ const handleNavClick = (e, href) => {
     }
 };
 
-const handleLogout = () => {
-    router.post(route('logout'));
+const openLogoutModal = () => {
+    isMobileMenuOpen.value = false;
+    showLogoutModal.value = true;
 };
 
 const isProfileOpen = ref(false);
@@ -131,7 +134,7 @@ const user = computed(() => {
                     <BaseButton 
                         size="sm" 
                         variant="outlineDanger" 
-                        @click="handleLogout"
+                        @click="openLogoutModal"
                         responsiveClass="hidden" 
                         class="md:inline-flex"
                     >
@@ -191,7 +194,7 @@ const user = computed(() => {
                     Edit Profil
                 </Link>
                 <div class="pt-2">
-                    <BaseButton @click="handleLogout" rounded="full" variant="outlineDanger"
+                    <BaseButton @click="openLogoutModal" rounded="full" variant="outlineDanger"
                         full>
                         <span class="material-symbols-outlined">logout</span>
                         <span class="inline">Keluar</span>
@@ -200,4 +203,11 @@ const user = computed(() => {
             </div>
         </div>
     </nav>
+
+    <!-- Logout Confirmation Modal -->
+    <LogoutConfirmModal 
+        :show="showLogoutModal" 
+        logout-route="logout"
+        @close="showLogoutModal = false" 
+    />
 </template>

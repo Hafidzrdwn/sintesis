@@ -2,11 +2,22 @@
 import { Link, usePage } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import { X } from 'lucide-vue-next';
+import LogoutConfirmModal from '@/Components/LogoutConfirmModal.vue';
 
 const showMobileMenu = ref(false);
+const showLogoutModal = ref(false);
 const page = usePage();
 const user = computed(() => page.props.auth.user);
-const userRole = computed(() => user.value.role || 'intern'); // Default to intern if undefined
+const userRole = computed(() => user.value.role || 'intern'); 
+
+const isInternalStaff = computed(() => ['admin', 'mentor'].includes(userRole.value));
+
+const logoutRoute = computed(() => isInternalStaff.value ? 'auth.internal.logout' : 'logout');
+
+const openLogoutModal = () => {
+    showMobileMenu.value = false;
+    showLogoutModal.value = true;
+};
 
 // Menu Configurations
 const menus = {
@@ -43,12 +54,10 @@ const roleLabel = computed(() => {
 });
 
 const isActive = (prefix) => {
-    // Check for exact match for dashboard to prevent partial matching issues if other routes start with similar prefix
-    // But since prefixes are quite distinct (/intern/dashboard vs /intern/tasks), startsWith is generally safe.
-    // However, usually "Dashboard" is exact match or handled specifically if it's the root.
-    // For /intern/dashboard, startsWith is fine as long as no other route is /intern/dashboard-something
     return page.url.startsWith(prefix);
 };
+
+const isSettingsActive = computed(() => page.url === '/profile');
 </script>
 
 <template>
@@ -99,18 +108,18 @@ const isActive = (prefix) => {
                         </div>
                         
                         <div class="flex flex-col gap-2 border-t border-slate-100 pt-4">
-                            <Link :href="route('intern.settings')" 
+                            <Link :href="route('profile.edit')" 
                                 @click="showMobileMenu = false"
                                 class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group"
-                                :class="isActive('/intern/settings') ? 'bg-primary/10 text-primary font-bold ring-1 ring-primary/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'"
+                                :class="isSettingsActive ? 'bg-primary/10 text-primary font-bold ring-1 ring-primary/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'"
                             >
-                                <span class="material-symbols-outlined" :class="{ 'text-primary fill-current': isActive('/intern/settings') }">settings</span>
+                                <span class="material-symbols-outlined" :class="{ 'text-primary fill-current': isSettingsActive }">settings</span>
                                 <span class="text-sm">Pengaturan</span>
                             </Link>
-                            <Link :href="route('logout')" method="post" as="button" class="flex items-center gap-3 px-4 py-3 rounded-xl text-danger hover:bg-red-50 transition-colors w-full text-left mt-1">
+                            <button @click="openLogoutModal" class="flex cursor-pointer items-center gap-3 px-4 py-3 rounded-xl text-danger hover:bg-red-50 transition-colors w-full text-left mt-1">
                                 <span class="material-symbols-outlined">logout</span>
                                 <span class="text-sm font-semibold">Keluar</span>
-                            </Link>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -126,7 +135,7 @@ const isActive = (prefix) => {
                                 {{ user.name.charAt(0) }}
                             </div>
                             <div class="flex flex-col">
-                                <h1 class="text-text-main text-base font-bold leading-tight line-clamp-1">{{ user.name }}</h1>
+                                <h1 class="text-text-main text-base font-bold leading-tight">{{ user.name }}</h1>
                                 <p class="text-text-secondary text-xs font-medium">{{ roleLabel }}</p>
                             </div>
                         </div>
@@ -148,17 +157,17 @@ const isActive = (prefix) => {
                     
                     <!-- Bottom Actions -->
                     <div class="flex flex-col gap-2 border-t border-slate-100 pt-4">
-                        <Link :href="route('intern.settings')" 
+                        <Link :href="route('profile.edit')" 
                             class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group"
-                            :class="isActive('/intern/settings') ? 'bg-primary/10 text-primary font-bold ring-1 ring-primary/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'"
+                            :class="isSettingsActive ? 'bg-primary/10 text-primary font-bold ring-1 ring-primary/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'"
                         >
-                            <span class="material-symbols-outlined" :class="{ 'text-primary fill-current': isActive('/intern/settings') }">settings</span>
+                            <span class="material-symbols-outlined" :class="{ 'text-primary fill-current': isSettingsActive }">settings</span>
                             <span class="text-sm">Pengaturan</span>
                         </Link>
-                        <Link :href="route('logout')" method="post" as="button" class="flex items-center gap-3 px-4 py-3 rounded-xl text-danger hover:bg-red-50 transition-colors w-full text-left mt-1">
+                        <button @click="openLogoutModal" class="flex cursor-pointer items-center gap-3 px-4 py-3 rounded-xl text-danger hover:bg-red-50 transition-colors w-full text-left mt-1">
                             <span class="material-symbols-outlined">logout</span>
                             <span class="text-sm font-semibold">Keluar</span>
-                        </Link>
+                        </button>
                     </div>
                 </div>
             </aside>
@@ -194,4 +203,11 @@ const isActive = (prefix) => {
             </main>
         </div>
     </div>
+
+    <!-- Logout Confirmation Modal -->
+    <LogoutConfirmModal 
+        :show="showLogoutModal" 
+        :logout-route="logoutRoute"
+        @close="showLogoutModal = false" 
+    />
 </template>

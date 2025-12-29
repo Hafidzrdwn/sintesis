@@ -1,6 +1,7 @@
 <script setup>
-import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
+import { ref, computed } from 'vue';
+import BaseButton from '@/Components/BaseButton.vue';
 
 const form = useForm({
     identity: '',
@@ -8,8 +9,11 @@ const form = useForm({
     remember: false,
 });
 
+const page = usePage();
+const errorMessage = computed(() => page.props.flash?.error);
+
 const submit = () => {
-    form.post(route('login'), {
+    form.post(route('auth.internal.login.store'), {
         onFinish: () => form.reset('password'),
     });
 };
@@ -71,7 +75,7 @@ const showPassword = ref(false);
                         Masuk ke SINTESIS
                     </h2>
                     <p class="text-slate-500 text-base">
-                        Portal Internal - Admin & HRD Inosoft
+                        Portal Internal - Admin, Mentor, & HRD Inosoft
                     </p>
                 </div>
 
@@ -90,9 +94,11 @@ const showPassword = ref(false);
                                 name="identity" 
                                 type="text" 
                                 placeholder="admin@inosoft.com" 
-                                class="block w-full rounded-lg border-0 py-3.5 pl-10 text-slate-900 ring-1 ring-inset ring-slate-200 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-primary bg-white sm:text-sm sm:leading-6 transition-all duration-200 hover:ring-slate-300"
+                                class="block w-full rounded-lg border-0 py-3.5 pl-10 text-slate-900 ring-1 ring-inset placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-primary bg-white sm:text-sm sm:leading-6 transition-all duration-200 hover:ring-slate-300"
+                                :class="form.errors.identity ? 'ring-red-500' : 'ring-slate-200'"
                             />
                         </div>
+                        <p v-if="form.errors.identity" class="text-sm text-red-600">{{ form.errors.identity }}</p>
                     </div>
 
                     <div class="space-y-2">
@@ -110,8 +116,9 @@ const showPassword = ref(false);
                                 :type="showPassword ? 'text' : 'password'"
                                 id="password" 
                                 name="password" 
-                                placeholder="••••••••" 
-                                class="block w-full rounded-lg border-0 py-3.5 pl-10 pr-10 text-slate-900 ring-1 ring-inset ring-slate-200 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-primary bg-white sm:text-sm sm:leading-6 transition-all duration-200 hover:ring-slate-300"
+                                placeholder="********" 
+                                class="block w-full rounded-lg border-0 py-3.5 pl-10 pr-10 text-slate-900 ring-1 ring-inset placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-primary bg-white sm:text-sm sm:leading-6 transition-all duration-200 hover:ring-slate-300"
+                                :class="form.errors.password ? 'ring-red-500' : 'ring-slate-200'"
                             />
                             <div 
                                 @click="showPassword = !showPassword"
@@ -120,19 +127,19 @@ const showPassword = ref(false);
                                 <span class="material-symbols-outlined text-[20px]">{{ showPassword ? 'visibility_off' : 'visibility' }}</span>
                             </div>
                         </div>
-                        <div class="text-right">
-                            <a href="#" class="text-sm font-semibold text-primary hover:text-primary-hover transition-colors">Lupa kata sandi?</a>
-                        </div>
+                        <p v-if="form.errors.password" class="text-sm text-red-600">{{ form.errors.password }}</p>
                     </div>
 
                     <div>
-                        <button 
+                        <BaseButton
+                            full
+                            size="md" 
                             type="submit" 
                             :disabled="form.processing"
-                            class="flex w-full justify-center rounded-lg bg-primary px-3 py-3.5 text-sm font-semibold leading-6 text-white shadow-md shadow-blue-200 hover:bg-primary-hover hover:shadow-lg hover:shadow-blue-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all duration-200 transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                            :loading="form.processing"
                         >
                             Masuk
-                        </button>
+                        </BaseButton>
                     </div>
                 </form>
 
