@@ -44,7 +44,6 @@ class Applicant extends Model
         'cv_path',
         
         // Meta
-        'position_applied',
         'status',
         'notes',
         'reviewed_by',

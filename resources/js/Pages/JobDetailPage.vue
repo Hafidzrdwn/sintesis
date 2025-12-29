@@ -12,6 +12,10 @@ const props = defineProps({
         type: Object,
         required: true,
     },
+    user_active_internship: {
+        type: Boolean,
+        default: false,
+    },
     stats: {
         type: Object,
         default: () => ({
@@ -276,16 +280,20 @@ defineOptions({
                         >
                             {{ isLoggedIn ? 'Daftar Sekarang' : 'Daftar & Login' }}
                         </BaseButton>
-                        <!-- Cannot apply: has active application -->
+
+                        <div v-else-if="job.status === 'open' && user_active_internship && isLoggedIn"
+                            class="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+                            <p class="text-red-700 font-semibold">Magang Sedang Berlangsung</p>
+                            <p class="text-red-600 text-sm mt-1">Anda merupakan peserta magang aktif.</p>
+                        </div>
                         <div v-else-if="job.status === 'open' && !canApply && isLoggedIn" 
                             class="bg-amber-50 border border-amber-200 rounded-lg p-4 text-center">
                             <p class="text-amber-700 font-semibold">Lamaran Sedang Diproses</p>
                             <p class="text-amber-600 text-sm mt-1">Anda sudah memiliki lamaran aktif. Tunggu pengumuman terlebih dahulu.</p>
                         </div>
-                        <!-- Job closed -->
                         <div v-else-if="job.status !== 'open'" class="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
                             <p class="text-red-700 font-semibold">Lowongan Ditutup</p>
-                            <p class="text-red-600 text-sm mt-1">Pendaftaran sudah tidak tersedia</p>
+                            <p class="text-red-600 text-sm mt-1">Pendaftaran sudah tidak tersedia.</p>
                         </div>
                         <BaseButton @click="shareJob" variant="outline" size="lg" full>
                             <span class="material-symbols-outlined">share</span>

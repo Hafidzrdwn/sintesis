@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 import { Head, useForm, usePage, Link, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import LandingLayout from '@/Layouts/LandingLayout.vue';
@@ -14,7 +14,7 @@ defineOptions({
         const status = page.props.applicationStatus;
         const user = page.props.auth?.user;
         const isInternalStaff = ['admin', 'mentor'].includes(user?.role);
-        const useAuth = status === 'active_intern' || isInternalStaff;
+        const useAuth = (status === 'accepted' || page.props.hasActiveInternship) || isInternalStaff;
         const Layout = useAuth ? AuthenticatedLayout : LandingLayout;
         return h(Layout, () => page);
     }
@@ -24,6 +24,7 @@ const props = defineProps({
     mustVerifyEmail: Boolean,
     status: String,
     applicationStatus: String,
+    hasActiveInternship: Boolean
 });
 
 const form = useForm({
@@ -104,7 +105,7 @@ const getUserAvatar = (user) => {
 };
 
 const isInternal = computed(() => {
-    return props.applicationStatus === 'active_intern' || ['admin', 'mentor'].includes(user.value?.role);
+    return (props.applicationStatus === 'accepted' || props.hasActiveInternship) || ['admin', 'mentor'].includes(user.value?.role);
 });
 </script>
 

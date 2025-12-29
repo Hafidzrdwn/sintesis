@@ -44,7 +44,7 @@ class DashboardController extends Controller
             'applicationStatus' => $status, // 'none', 'pending', 'accepted', 'rejected'
             'application' => $applicant ? [
                 'id' => $applicant->id,
-                'position_applied' => $applicant->position_applied,
+                'position_applied' => $applicant->job?->title,
                 'status' => $applicant->status,
                 'created_at' => $applicant->created_at,
                 'reviewed_at' => $applicant->reviewed_at,

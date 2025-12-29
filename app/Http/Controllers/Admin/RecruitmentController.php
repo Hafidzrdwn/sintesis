@@ -22,7 +22,7 @@ class RecruitmentController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('full_name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhereRelation('user', 'email', 'like', "%{$search}%")
                   ->orWhere('university', 'like', "%{$search}%");
             });
         }
@@ -31,8 +31,8 @@ class RecruitmentController extends Controller
             $query->where('status', $request->status);
         }
 
-        if ($request->filled('job_id')) {
-            $query->where('job_id', $request->job_id);
+        if ($request->filled('job')) {
+            $query->whereRelation('job', 'slug', $request->job);
         }
 
         $applicants = $query->paginate(10)->withQueryString();
@@ -46,7 +46,7 @@ class RecruitmentController extends Controller
             'rejected' => Applicant::where('status', 'rejected')->count(),
         ];
 
-        $jobs = Job::select('id', 'title')->orderBy('title')->get();
+        $jobs = Job::select('id', 'title', 'slug')->orderBy('title')->get();
 
         $mentors = User::where('role', 'mentor')
             ->where('status', 'active')
@@ -54,12 +54,14 @@ class RecruitmentController extends Controller
             ->orderBy('name')
             ->get();
 
+            // return $applicants;
+
         return Inertia::render('Admin/Recruitment', [
             'applicants' => $applicants,
             'stats' => $stats,
             'jobs' => $jobs,
             'mentors' => $mentors,
-            'filters' => $request->only(['search', 'status', 'job_id']),
+            'filters' => $request->only(['search', 'status', 'job']),
         ]);
     }
 
@@ -95,23 +97,17 @@ class RecruitmentController extends Controller
     }
 
     private function processAcceptedApplicant(Applicant $applicant, ?string $mentorId)
-    {
-        $user = User::where('email', $applicant->email)->first();
+    {   
+        $user = User::where('email', $applicant->user->email)->first();
         
-        if ($user) {
-            $user->update(['role' => 'intern']);
-
-            if ($mentorId) {
-                Internship::create([
-                    'applicant_id' => $applicant->id,
-                    'intern_id' => $user->id,
-                    'mentor_id' => $mentorId,
-                    'job_id' => $applicant->job_id,
-                    'start_date' => $applicant->start_date ?? now(),
-                    'end_date' => $applicant->end_date ?? now()->addMonths(3),
-                    'status' => 'active',
-                ]);
-            }
-        }
+        Internship::create([
+            'applicant_id' => $applicant->id,
+            'intern_id' => $user->id,
+            'mentor_id' => $mentorId,
+            'job_id' => $applicant->job_id,
+            'start_date' => $applicant->start_date ?? now(),
+            'end_date' => $applicant->end_date ?? now()->addMonths(3),
+            'status' => 'active',
+        ]);
     }
 }

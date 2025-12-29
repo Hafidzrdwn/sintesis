@@ -1,7 +1,7 @@
 <script setup>
 import BaseButton from '@/Components/BaseButton.vue';
 import LandingLayout from '@/Layouts/LandingLayout.vue';
-import { Head, useForm, Link, usePage, router } from '@inertiajs/vue3';
+import { Head, useForm, Link, usePage } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
 
 const props = defineProps({

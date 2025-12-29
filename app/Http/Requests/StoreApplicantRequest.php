@@ -24,7 +24,6 @@ class StoreApplicantRequest extends FormRequest
                 'required', 
                 'email', 
                 'max:255',
-                Rule::unique('applicants', 'email')->whereNull('deleted_at'),
             ],
             'phone' => ['required', 'string', 'max:20'],
             'university' => ['required', 'string', 'max:255'],

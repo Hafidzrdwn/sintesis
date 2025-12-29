@@ -51,7 +51,6 @@ class JobController extends Controller
     {
         $job = Job::where('slug', $slug)->firstOrFail();
 
-        // Get applicant stats for this job
         $stats = [
             'total' => $job->applicants()->count(),
             'pending' => $job->applicants()->where('status', 'pending')->count(),
@@ -59,6 +58,8 @@ class JobController extends Controller
             'rejected' => $job->applicants()->where('status', 'rejected')->count(),
             'accepted' => $job->applicants()->where('status', 'accepted')->count(),
         ];
+
+        $user = (auth()->check()) ? auth()->user() : null;
 
         return Inertia::render('JobDetailPage', [
             'job' => [
@@ -77,6 +78,7 @@ class JobController extends Controller
                 'deadline' => $job->deadline,
                 'image' => $job->image,
             ],
+            'user_active_internship' => $user?->hasActiveInternship(),
             'stats' => $stats,
             'canApply' => auth()->check() ? auth()->user()->canApply() : true,
         ]);

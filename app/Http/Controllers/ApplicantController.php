@@ -17,7 +17,6 @@ class ApplicantController extends Controller
     {
         $user = $request->user();
         
-        // Check if user can apply (prevent double application)
         if (!$user->canApply()) {
             return redirect()->route('dashboard')
                 ->with('error', 'Anda sudah memiliki lamaran yang sedang diproses.');
@@ -25,7 +24,6 @@ class ApplicantController extends Controller
 
         $validated = $request->validated();
         
-        // Get the job to store position name
         $job = Job::findOrFail($validated['job_id']);
         
         // Handle file uploads
@@ -49,7 +47,6 @@ class ApplicantController extends Controller
         Applicant::create([
             'user_id' => $user->id,
             'job_id' => $validated['job_id'],
-            'position_applied' => $job->title,
             
             // Step 1: Identity
             'full_name' => $validated['full_name'],

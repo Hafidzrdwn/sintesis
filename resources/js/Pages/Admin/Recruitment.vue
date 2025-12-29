@@ -1,7 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, router, usePage } from '@inertiajs/vue3';
-import { ref, computed, watch } from 'vue';
+import { Head, router } from '@inertiajs/vue3';
+import { ref, watch } from 'vue';
 import BaseButton from '@/Components/BaseButton.vue';
 import { getInitials, formatDate, getDocumentUrl, getAvatarUrl } from '@/utils/helpers';
 import {
@@ -35,12 +35,10 @@ const props = defineProps({
     filters: Object,
 });
 
-const page = usePage();
-
 // State
 const searchQuery = ref(props.filters?.search || '');
 const statusFilter = ref(props.filters?.status || 'all');
-const jobFilter = ref(props.filters?.job_id || '');
+const jobFilter = ref(props.filters?.job || '');
 const selectedApplicant = ref(null);
 const showDetailModal = ref(false);
 const isLoading = ref(false);
@@ -66,7 +64,7 @@ const applyFilters = () => {
     router.get(route('admin.recruitment'), {
         search: searchQuery.value || undefined,
         status: statusFilter.value !== 'all' ? statusFilter.value : undefined,
-        job_id: jobFilter.value || undefined,
+        job: jobFilter.value || undefined,
     }, {
         preserveState: true,
         preserveScroll: true,
@@ -124,12 +122,20 @@ const updateStatus = (status) => {
     });
 };
 
+const randomMentor = ref(null);
+
+const randomizeMentor = () => {
+    randomMentor.value = props.mentors[Math.floor(Math.random() * props.mentors.length)].id;
+}
+
 const confirmAccept = () => {
     if (!selectedApplicant.value) return;
 
+    if (!selectedMentor.value) randomizeMentor();
+
     router.patch(route('admin.recruitment.update-status', selectedApplicant.value.id), {
         status: 'accepted',
-        mentor_id: selectedMentor.value || null,
+        mentor_id: selectedMentor.value || randomMentor.value,
         notes: acceptNotes.value || null,
     }, {
         preserveScroll: true,
@@ -260,7 +266,7 @@ const getUserAvatar = (applicant) => {
                 <select v-model="jobFilter"
                     class="px-4 py-2 rounded-xl border-slate-200 focus:border-primary focus:ring-primary text-sm font-medium text-slate-600 bg-slate-50 cursor-pointer">
                     <option value="">Semua Posisi</option>
-                    <option v-for="job in jobs" :key="job.id" :value="job.id">{{ job.title }}</option>
+                    <option v-for="job in jobs" :key="job.id" :value="job.slug">{{ job.title }}</option>
                 </select>
             </div>
         </div>
@@ -274,13 +280,14 @@ const getUserAvatar = (applicant) => {
                             <th class="px-6 py-4 font-bold text-slate-700">Nama Pendaftar</th>
                             <th class="px-6 py-4 font-bold text-slate-700">Universitas</th>
                             <th class="px-6 py-4 font-bold text-slate-700">Posisi</th>
-                            <th class="px-6 py-4 font-bold text-slate-700 text-center">Tanggal Daftar</th>
-                            <th class="px-6 py-4 font-bold text-slate-700 text-center">Nama Referensi Staff Inosoft</th>
-                            <th class="px-6 py-4 font-bold text-slate-700 text-center">Status</th>
+                            <th class="px-6 py-4 font-bold text-slate-700">Tanggal Daftar</th>
+                            <th class="px-6 py-4 font-bold text-slate-700">Nama Referensi Staff Inosoft</th>
+                            <th class="px-6 py-4 font-bold text-slate-700">Direview Oleh</th>
+                            <th class="px-6 py-4 font-bold text-slate-700">Status</th>
                             <th class="px-6 py-4 font-bold text-slate-700 text-right">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100">
+                    <tbody class="divide-y divide-slate-100" v-if="!isLoading">
                         <tr v-for="applicant in applicants.data" :key="applicant.id"
                             class="hover:bg-slate-50/50 transition-colors group">
                             <td class="px-6 py-4">
@@ -306,22 +313,25 @@ const getUserAvatar = (applicant) => {
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span
                                     class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
-                                    {{ applicant.job?.title || applicant.position_applied || '-' }}
+                                    {{ applicant.job?.title || '-' }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-center text-slate-600">
+                            <td class="px-6 py-4 text-slate-600">
                                 {{ formatDate(applicant.created_at) }}
                             </td>
-                            <td class="px-6 py-4 text-center text-slate-600 text-xs">
+                            <td class="px-6 py-4 text-slate-600 text-xs">
                                 {{ applicant.referral || '-' }}
                             </td>
-                            <td class="px-6 py-4 text-center">
+                            <td class="px-6 py-4 text-slate-600 text-xs">
+                                {{ applicant.reviewer?.name || '-' }}
+                            </td>
+                            <td class="px-6 py-4">
                                 <span class="px-3 py-1 rounded-full text-xs font-bold border"
                                     :class="getStatusConfig(applicant.status).color">
                                     {{ getStatusConfig(applicant.status).label }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-right">
+                            <td class="px-6 py-4">
                                 <button @click="openDetail(applicant)"
                                     class="p-2 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all cursor-pointer">
                                     <Eye class="w-5 h-5" />
@@ -329,8 +339,15 @@ const getUserAvatar = (applicant) => {
                             </td>
                         </tr>
                         <tr v-if="applicants.data.length === 0">
-                            <td colspan="6" class="px-6 py-12 text-center text-slate-500">
+                            <td colspan="8" class="px-6 py-12 text-center text-slate-500">
                                 Tidak ada data pendaftar ditemukan.
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tbody v-else class="divide-y divide-slate-100">
+                        <tr>
+                            <td colspan="8" class="px-6 py-12 text-center text-slate-500">
+                                Loading data...
                             </td>
                         </tr>
                     </tbody>
@@ -391,8 +408,8 @@ const getUserAvatar = (applicant) => {
                                     <div>
                                         <h2 class="text-xl font-bold text-slate-900">{{ selectedApplicant.full_name }}
                                         </h2>
-                                        <p class="text-slate-500 font-medium">{{ selectedApplicant.job?.title ||
-                                            selectedApplicant.position_applied || '-' }}</p>
+                                        <p class="text-slate-500 font-medium">{{ selectedApplicant.job?.title || '-' }}
+                                        </p>
                                     </div>
                                     <span class="px-3 py-1 rounded-full text-xs font-bold border flex-shrink-0"
                                         :class="getStatusConfig(selectedApplicant.status).color">
@@ -424,7 +441,7 @@ const getUserAvatar = (applicant) => {
 
                         <!-- Skills -->
                         <div v-if="selectedApplicant.skills?.length" class="border-t border-slate-100 pt-4">
-                            <h4 class="font-bold text-slate-800 mb-3">Keahlian</h4>
+                            <h4 class="font-bold text-slate-800 mb-3">Keahlian (Skills)</h4>
                             <div class="flex flex-wrap gap-2">
                                 <span v-for="skill in selectedApplicant.skills" :key="skill"
                                     class="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium">
@@ -437,10 +454,58 @@ const getUserAvatar = (applicant) => {
                             </div>
                         </div>
 
+                        <!-- Databases -->
+                        <div v-if="selectedApplicant.databases?.length" class="border-t border-slate-100 pt-4">
+                            <h4 class="font-bold text-slate-800 mb-3">Databases Skills</h4>
+                            <div class="flex flex-wrap gap-2">
+                                <span v-for="database in selectedApplicant.databases" :key="database"
+                                    class="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium">
+                                    {{ database }}
+                                </span>
+                                <span v-if="selectedApplicant.other_databases"
+                                    class="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-medium">
+                                    {{ selectedApplicant.other_databases }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- OS -->
+                        <div v-if="selectedApplicant.operating_systems?.length" class="border-t border-slate-100 pt-4">
+                            <h4 class="font-bold text-slate-800 mb-3">OS Skills</h4>
+                            <div class="flex flex-wrap gap-2">
+                                <span v-for="os in selectedApplicant.operating_systems" :key="os"
+                                    class="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium">
+                                    {{ os }}
+                                </span>
+                                <span v-if="selectedApplicant.other_os"
+                                    class="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-medium">
+                                    {{ selectedApplicant.other_os }}
+                                </span>
+                            </div>
+                        </div>
+
                         <!-- Self Description -->
                         <div v-if="selectedApplicant.self_description" class="border-t border-slate-100 pt-4">
                             <h4 class="font-bold text-slate-800 mb-3">Deskripsi Diri</h4>
                             <p class="text-slate-600 text-sm leading-relaxed">{{ selectedApplicant.self_description }}
+                            </p>
+                        </div>
+
+                        <!-- Other Interest -->
+                        <div v-if="selectedApplicant.other_interest" class="border-t border-slate-100 pt-4">
+                            <h4 class="font-bold text-slate-800 mb-3">
+                                Bidang Lain yang Diminati / Ingin Dikerjakan
+                            </h4>
+                            <p class="text-slate-600 text-sm leading-relaxed">{{ selectedApplicant.other_interest }}
+                            </p>
+                        </div>
+
+                        <!-- Demo Project -->
+                        <div class="border-t border-slate-100 pt-4">
+                            <h4 class="font-bold text-slate-800 mb-3">Apakah Project Akhir Wajib Demo ke Guru/Dosen?
+                            </h4>
+                            <p class="text-slate-600 text-sm leading-relaxed">{{ (selectedApplicant.demo_required) ?
+                                'Wajib' : 'Tidak Wajib' }}
                             </p>
                         </div>
 
@@ -542,13 +607,14 @@ const getUserAvatar = (applicant) => {
                         </button>
                     </div>
                     <div class="p-6 flex flex-col gap-4">
-                        <p class="text-slate-600 text-sm">Pilih mentor untuk pendaftar ini (opsional):</p>
+                        <p class="text-slate-600 text-sm">Pilih mentor untuk pendaftar ini:</p>
 
                         <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-2">Mentor Pembimbing</label>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Mentor Pembimbing
+                                (Opsional)</label>
                             <select v-model="selectedMentor"
                                 class="w-full px-4 py-2 rounded-xl border-slate-200 focus:border-primary focus:ring-primary text-sm">
-                                <option value="">-- Pilih Mentor (Opsional) --</option>
+                                <option value="">-- Pilih Mentor --</option>
                                 <option v-for="mentor in mentors" :key="mentor.id" :value="mentor.id">{{ mentor.name }}
                                 </option>
                             </select>
@@ -563,8 +629,7 @@ const getUserAvatar = (applicant) => {
 
                         <div class="flex gap-3 pt-2">
                             <BaseButton variant="secondary" full @click="closeAcceptModal">Batal</BaseButton>
-                            <BaseButton variant="primary" full @click="confirmAccept"
-                                class="bg-success hover:bg-emerald-600">
+                            <BaseButton variant="success" full @click="confirmAccept">
                                 <CheckCircle class="w-4 h-4" />
                                 Konfirmasi
                             </BaseButton>
