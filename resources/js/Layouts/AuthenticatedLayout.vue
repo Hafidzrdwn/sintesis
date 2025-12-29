@@ -89,7 +89,7 @@ const getUserAvatar = (user) => {
                              <div class="flex items-center gap-4 px-2 p-3 bg-slate-50 rounded-2xl border border-slate-100">
                                 <img v-if="getUserAvatar(user)" :src="getUserAvatar(user)"
                                     :alt="user.name"
-                                    class="size-10 ring-2 object-cover object-top ring-white flex items-center justify-center bg-slate-200 text-slate-500 font-bold text-lg uppercase"    
+                                    class="size-11 ring-2 rounded-full object-cover object-top ring-white shadow shadow-primary"    
                                 >
                                 <div v-else class="bg-center bg-no-repeat bg-cover rounded-full size-10 ring-2 ring-white flex items-center justify-center bg-slate-200 text-slate-500 font-bold text-lg uppercase">
                                     {{ getInitials(user.name) }}
@@ -139,7 +139,7 @@ const getUserAvatar = (user) => {
                     <div class="flex flex-col gap-8">
                         <div class="flex items-center gap-4 px-2">
                             <img v-if="getUserAvatar(user)" :src="getUserAvatar(user)" :alt="user.name"
-                                class="size-12 ring-2 object-cover object-top ring-white flex items-center justify-center bg-slate-200 text-slate-500 font-bold text-lg uppercase">
+                                class="size-14 ring-2 shadow shadow-primary object-cover object-top rounded-full ring-white">
                             <div v-else
                                 class="bg-center bg-no-repeat bg-cover rounded-full size-12 ring-2 ring-white flex items-center justify-center bg-slate-200 text-slate-500 font-bold text-lg uppercase">
                                 {{ getInitials(user.name) }}
