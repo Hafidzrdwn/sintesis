@@ -140,7 +140,7 @@ class GoogleController extends Controller
                 'email' => $googleUser->getEmail(),
                 'google_id' => $googleUser->getId(),
                 'avatar' => $googleUser->getAvatar(),
-                'password' => null, 
+                'password' => Hash::make(Str::random(32)), // Random secure password for OAuth users
                 'role' => 'intern',
                 'status' => 'active',
                 'email_verified_at' => now(), 
