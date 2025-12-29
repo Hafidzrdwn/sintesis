@@ -17,6 +17,7 @@ class ProfileUpdateRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'username' => ['nullable', 'string', 'max:50', 'alpha_dash', 'unique:users,username,'.$this->user()->id],
             'phone' => ['nullable', 'string', 'max:20'],
             'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
         ];
@@ -30,6 +31,9 @@ class ProfileUpdateRequest extends FormRequest
         return [
             'name.required' => 'Nama lengkap wajib diisi.',
             'name.max' => 'Nama maksimal 255 karakter.',
+            'username.max' => 'Username maksimal 50 karakter.',
+            'username.alpha_dash' => 'Username hanya boleh berisi huruf, angka, strip, dan garis bawah.',
+            'username.unique' => 'Username sudah digunakan.',
             'phone.max' => 'Nomor telepon maksimal 20 karakter.',
             'avatar.image' => 'File harus berupa gambar.',
             'avatar.mimes' => 'Format gambar harus jpeg, png, jpg, gif, atau webp.',

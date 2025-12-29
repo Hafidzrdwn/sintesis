@@ -34,9 +34,16 @@ Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name
 |--------------------------------------------------------------------------
 */
 
-Route::get('/internal/login', function () {
-    return Inertia::render('Auth/InternalLogin');
-})->name('auth.internal.login');
+Route::middleware('guest')->group(function () {
+    Route::get('/internal/login', [App\Http\Controllers\Auth\InternalLoginController::class, 'create'])
+        ->name('auth.internal.login');
+    Route::post('/internal/login', [App\Http\Controllers\Auth\InternalLoginController::class, 'store'])
+        ->name('auth.internal.login.store');
+});
+
+Route::post('/internal/logout', [App\Http\Controllers\Auth\InternalLoginController::class, 'destroy'])
+    ->middleware(['auth', 'verified', 'active'])
+    ->name('auth.internal.logout');
 
 /*
 |--------------------------------------------------------------------------
@@ -79,10 +86,6 @@ Route::middleware(['auth', 'verified', 'active', 'role:intern'])->prefix('intern
     Route::get('/analytics', function () {
         return Inertia::render('Intern/Analitik');
     })->name('intern.analytics');
-
-    Route::get('/settings', function () {
-        return Inertia::render('Intern/Pengaturan');
-    })->name('intern.settings');
 });
 
 /*
@@ -143,7 +146,7 @@ Route::middleware(['auth', 'verified', 'active', 'role:admin'])->prefix('admin')
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified', 'active'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

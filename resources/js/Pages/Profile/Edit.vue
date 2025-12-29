@@ -1,21 +1,33 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { Head, useForm, usePage, Link, router } from '@inertiajs/vue3';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import LandingLayout from '@/Layouts/LandingLayout.vue';
 import BaseButton from '@/Components/BaseButton.vue';
-
-defineOptions({ layout: LandingLayout });
-
-const props = defineProps({
-    mustVerifyEmail: Boolean,
-    status: String,
-});
 
 const page = usePage();
 const user = computed(() => page.props.auth.user);
 
+defineOptions({ 
+    layout: (h, page) => {
+        const status = page.props.applicationStatus;
+        const user = page.props.auth?.user;
+        const isInternalStaff = ['admin', 'mentor'].includes(user?.role);
+        const useAuth = status === 'active_intern' || isInternalStaff;
+        const Layout = useAuth ? AuthenticatedLayout : LandingLayout;
+        return h(Layout, () => page);
+    }
+});
+
+const props = defineProps({
+    mustVerifyEmail: Boolean,
+    status: String,
+    applicationStatus: String,
+});
+
 const form = useForm({
     name: user.value.name,
+    username: user.value.username || '',
     phone: user.value.phone || '',
     avatar: null,
 });
@@ -34,7 +46,6 @@ const deleteForm = useForm({
     password: '',
 });
 
-// Avatar preview handler
 const handleAvatarChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -51,6 +62,7 @@ const updateProfile = () => {
     router.post(route('profile.update'), {
         _method: 'put',
         name: form.name,
+        username: form.username,
         phone: form.phone,
         avatar: form.avatar,
     }, {
@@ -84,10 +96,13 @@ const deleteAccount = () => {
     });
 };
 
-// Current avatar to display
 const displayAvatar = computed(() => {
     if (avatarPreview.value) return avatarPreview.value;
     return user.value.avatar;
+});
+
+const isInternal = computed(() => {
+    return props.applicationStatus === 'active_intern' || ['admin', 'mentor'].includes(user.value?.role);
 });
 </script>
 
@@ -95,21 +110,22 @@ const displayAvatar = computed(() => {
 
     <Head title="Edit Profil" />
 
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div :class="isInternal ? 'flex flex-col gap-8' : 'max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6'">
         <!-- Header -->
-        <div class="mb-8">
-            <div class="flex items-center gap-3 mb-3">
-                <Link href="/dashboard"
+        <div>
+            <div class="flex items-center gap-3 mb-1">
+                <Link v-if="!isInternal" 
+                    href="/dashboard"
                     class="text-slate-400 hover:text-primary transition-colors">
                     <span class="material-symbols-outlined">arrow_back</span>
                 </Link>
-                <h1 class="text-3xl font-bold text-slate-900">Pengaturan Profil</h1>
+                <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Pengaturan</h1>
             </div>
             <p class="text-slate-500">Kelola informasi akun dan keamanan Anda.</p>
         </div>
 
         <!-- Tabs -->
-        <div class="flex gap-1 mb-6 bg-slate-100 p-1 rounded-xl w-fit">
+        <div class="flex gap-1 bg-slate-100 p-1 rounded-xl w-fit">
             <button @click="activeTab = 'profile'"
                 class="px-5 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer"
                 :class="activeTab === 'profile' 
@@ -175,6 +191,20 @@ const displayAvatar = computed(() => {
                             class="w-full h-12 px-4 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                             placeholder="Nama lengkap Anda" />
                         <p v-if="form.errors.name" class="text-red-500 text-sm mt-1">{{ form.errors.name }}</p>
+                    </div>
+
+                    <!-- Username -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">
+                            Username
+                        </label>
+                        <div class="relative">
+                            <span class="material-symbols-outlined absolute left-3 top-3 text-slate-400 text-[20px]">alternate_email</span>
+                            <input v-model="form.username" type="text"
+                                class="w-full h-12 pl-10 pr-4 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                                placeholder="username123" />
+                        </div>
+                        <p v-if="form.errors.username" class="text-red-500 text-sm mt-1">{{ form.errors.username }}</p>
                     </div>
 
                     <!-- Email (Display Only) -->
