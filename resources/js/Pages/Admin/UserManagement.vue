@@ -241,7 +241,7 @@ const getRoleConfig = (user) => {
                 roleConfigs.push(configs.alumni);
             }
 
-            if (user.internships_as_intern?.[0].status === 'terminated') {
+            if (user.internships_as_intern?.[0]?.status === 'terminated') {
                 roleConfigs.push(configs.terminated);
             }
         }
