@@ -1,4 +1,5 @@
 <script setup>
+import { getDocumentUrl } from '@/utils/helpers';
 import { Link } from '@inertiajs/vue3';
 
 defineProps({
@@ -23,7 +24,10 @@ defineProps({
         class="bg-white rounded-2xl overflow-hidden border border-slate-200 hover:shadow-xl transition-all duration-300 flex flex-col group"
         :class="{'grayscale opacity-75 hover:grayscale-0 hover:opacity-100': status === 'Ditutup'}"
     >
-        <div class="h-48 bg-cover bg-center relative" :style="{ backgroundImage: `url('${image}')` }">
+        <div class="h-48 bg-cover bg-center relative" :style="{
+            backgroundImage: 
+            image ? `url('${getDocumentUrl(image)}')` : 'url(/images/hero.png)',
+         }">
             <div class="absolute inset-0 bg-slate-900/40 group-hover:bg-slate-900/30 transition-colors"></div>
             <div class="absolute top-4 left-4 bg-white/20 backdrop-blur-md border border-white/30 px-3 py-1 rounded-full">
                 <span class="text-xs font-bold text-white uppercase tracking-wider">{{ type }}</span>

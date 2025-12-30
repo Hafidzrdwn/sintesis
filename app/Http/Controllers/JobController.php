@@ -16,10 +16,10 @@ class JobController extends Controller
     public function landing(): Response
     {
         $jobs = Job::select([
-            'id', 'title', 'slug', 'type', 'status', 'description', 
+            'id', 'title', 'slug', 'type', 'description', 
             'location', 'duration', 'image', 'updated_at'
         ])
-        ->orderByRaw("CASE WHEN status = 'open' THEN 0 ELSE 1 END")
+        ->where('status', 'open')
         ->orderBy('updated_at', 'desc')
         ->get()
         ->map(function ($job) {
@@ -28,8 +28,6 @@ class JobController extends Controller
                 'title' => $job->title,
                 'slug' => $job->slug,
                 'type' => $job->type,
-                'status' => $job->status,
-                'statusLabel' => $job->status_label,
                 'description' => $job->description,
                 'location' => $job->location,
                 'duration' => $job->duration,

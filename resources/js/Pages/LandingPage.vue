@@ -195,7 +195,6 @@ onUnmounted(() => {
                     <JobCard 
                         :title="job.title"
                         :type="job.type"
-                        :status="job.statusLabel"
                         :description="job.description"
                         :updatedAt="formatRelativeTime(job.updatedAt)"
                         :image="job.image"
@@ -204,7 +203,6 @@ onUnmounted(() => {
                 </div>
             </div>
 
-            <!-- Empty State -->
             <div v-else class="text-center py-16 bg-white rounded-xl border border-slate-200">
                 <span class="material-symbols-outlined text-6xl text-slate-300 mb-4">work_off</span>
                 <h3 class="text-xl font-bold text-slate-700 mb-2">Belum Ada Lowongan</h3>
