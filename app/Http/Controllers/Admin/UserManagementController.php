@@ -30,12 +30,12 @@ class UserManagementController extends Controller
             if ($request->role === 'candidate') {
                 $query->where('role', 'intern')
                     ->whereDoesntHave('internshipsAsIntern', function ($q) {
-                        $q->where('status', 'active');
+                        $q->whereIn('status', ['active', 'extended']);
                     });
             } elseif ($request->role === 'active_intern') {
                 $query->where('role', 'intern')
                     ->whereHas('internshipsAsIntern', function ($q) {
-                        $q->where('status', 'active');
+                        $q->whereIn('status', ['active', 'extended']);
                     });
             } else {
                 $query->where('role', $request->role);
@@ -47,21 +47,22 @@ class UserManagementController extends Controller
         }
 
         $query->with(['internshipsAsIntern' => function ($q) {
-            $q->where('status', 'active')
-              ->with(['job:id,title', 'mentor:id,name']);
+            $q->with(['job:id,title', 'mentor:id,name']);
         }]);
 
         $users = $query->paginate(10)->withQueryString();
 
         $users->getCollection()->transform(function ($user) {
-            $user->has_active_internship = $user->role === 'intern' && $user->internshipsAsIntern->isNotEmpty();
+            $user->has_active_internship = $user->role === 'intern' && $user->internshipsAsIntern->isNotEmpty() && $user->hasActiveInternship();
             $user->intern_position = ($user->role === 'intern' && $user->internshipsAsIntern->isNotEmpty()) ? $user->internshipsAsIntern->first()->position : null;
+            $user->is_alumni = $user->role === 'intern' && $user->internshipsAsIntern->isNotEmpty() && $user->internshipsAsIntern->first()->status === 'completed';
+            $user->university = $user->applicant()->university ?? null;
             return $user;
         });
-
+        
         $activeInternCount = User::where('role', 'intern')
             ->whereHas('internshipsAsIntern', function ($q) {
-                $q->where('status', 'active');
+                $q->whereIn('status', ['active', 'extended']);
             })
             ->count();
         
@@ -260,7 +261,7 @@ class UserManagementController extends Controller
         // Handle internship based on role
         if ($validated['role'] === 'active_intern') {
             $useCustom = $validated['use_custom_position'] ?? false;
-            $activeInternship = $user->internshipsAsIntern()->where('status', 'active')->first();
+            $activeInternship = $user->currentInternship();
             
             $internshipData = [
                 'mentor_id' => $validated['mentor_id'],
@@ -279,8 +280,7 @@ class UserManagementController extends Controller
                 ]));
             }
         } elseif ($validated['role'] === 'candidate') {
-            // If switching to candidate, deactivate active internships
-            $user->internshipsAsIntern()->where('status', 'active')->update(['status' => 'completed']);
+            $user->internshipsAsIntern()->whereIn('status', ['active', 'extended'])->update(['status' => 'completed']);
         }
 
         return back()->with('success', 'User berhasil diperbarui.');

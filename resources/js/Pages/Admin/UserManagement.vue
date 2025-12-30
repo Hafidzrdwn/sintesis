@@ -22,7 +22,9 @@ import {
     Mail,
     Phone,
     Calendar,
-    X
+    X,
+    BriefcaseBusiness,
+    UserX,
 } from 'lucide-vue-next';
 
 defineOptions({ layout: AuthenticatedLayout });
@@ -190,19 +192,65 @@ const confirmDelete = () => {
 };
 
 const getRoleConfig = (user) => {
-    if (user.role === 'intern') {
-        if (user.has_active_internship) {
-            return { label: 'Intern Aktif', color: 'bg-emerald-100 text-emerald-700 border-emerald-200', icon: GraduationCap };
-        } else {
-            return { label: 'Kandidat', color: 'bg-amber-100 text-amber-700 border-amber-200', icon: User };
+    let roleConfigs = [];
+    const configs = {
+        activeIntern: {
+            label: 'Intern Aktif',
+            color: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+            icon: GraduationCap
+        },
+        candidate: {
+            label: 'Kandidat',
+            color: 'bg-amber-100 text-amber-700 border-amber-200',
+            icon: User
+        },
+        alumni: {
+            label: 'Alumni Inosoft',
+            color: 'bg-primary text-white border-primary/10',
+            icon: BriefcaseBusiness
+        },
+        admin: {
+            label: 'Admin',
+            color: 'bg-purple-100 text-purple-700 border-purple-200',
+            icon: Shield
+        },
+        mentor: {
+            label: 'Mentor',
+            color: 'bg-blue-100 text-blue-700 border-blue-200',
+            icon: Briefcase
+        },
+        terminated: {
+            label: 'Pernah Diberhentikan',
+            color: 'bg-red-100 text-red-700 border-red-200',
+            icon: UserX
+        },
+        unknown: {
+            label: 'Unknown',
+            color: 'bg-slate-100 text-slate-700 border-slate-200',
+            icon: User
         }
     }
 
-    const configs = {
-        admin: { label: 'Admin', color: 'bg-purple-100 text-purple-700 border-purple-200', icon: Shield },
-        mentor: { label: 'Mentor', color: 'bg-blue-100 text-blue-700 border-blue-200', icon: Briefcase },
-    };
-    return configs[user.role] || { label: 'Unknown', color: 'bg-slate-100 text-slate-700 border-slate-200', icon: User };
+    if (user.role === 'intern') {
+        if (user.has_active_internship) {
+            roleConfigs.push(configs.activeIntern)
+        } else {
+            roleConfigs.push(configs.candidate);
+
+            if (user.is_alumni) {
+                roleConfigs.push(configs.alumni);
+            }
+
+            if (user.internships_as_intern?.[0].status === 'terminated') {
+                roleConfigs.push(configs.terminated);
+            }
+        }
+
+        return roleConfigs;
+    }
+
+    roleConfigs.push(configs[user.role] || configs.unknown);
+    return roleConfigs;
 };
 
 const getStatusConfig = (status) => {
@@ -343,7 +391,7 @@ const getStatusConfig = (status) => {
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
                                     <img v-if="getAvatarUrl(user)" :src="getAvatarUrl(user)" :alt="user.name"
-                                        class="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-sm" />
+                                        class="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-sm object-top" />
                                     <div v-else
                                         class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
                                         {{ getInitials(user.name) }}
@@ -361,15 +409,20 @@ const getStatusConfig = (status) => {
                                 <span v-else class="text-slate-400">-</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span
-                                    class="px-3 py-1 rounded-full text-xs font-bold border inline-flex items-center gap-1"
-                                    :class="getRoleConfig(user).color">
-                                    <component :is="getRoleConfig(user).icon" class="w-3 h-3" />
-                                    {{ getRoleConfig(user).label }} {{ (user.intern_position) ?
-                                        `(${user.intern_position})` : '' }}
-                                </span>
+                                <div class="flex flex-wrap gap-2"> <span v-for="(role, index) in getRoleConfig(user)"
+                                        :key="index"
+                                        class="px-3 py-1 rounded-full text-xs font-bold border inline-flex items-center gap-1"
+                                        :class="role.color">
+                                        <component :is="role.icon" class="w-3 h-3" />
+                                        {{ role.label }}
+
+                                        <template v-if="user.intern_position && role.label === 'Intern Aktif'">
+                                            ({{ user.intern_position }})
+                                        </template>
+                                    </span>
+                                </div>
                             </td>
-                            <td class="px-6 py-4 text-center whitespace-nowrap">
+                            <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="px-3 py-1 rounded-full text-xs font-bold border"
                                     :class="getStatusConfig(user.status).color">
                                     {{ getStatusConfig(user.status).label }}
@@ -406,7 +459,8 @@ const getStatusConfig = (status) => {
                 <div class="text-xs text-slate-500">
                     Menampilkan <span class="font-bold text-slate-900">{{ users.from || 0 }}</span> - <span
                         class="font-bold text-slate-900">{{ users.to || 0 }}</span> dari <span
-                        class="font-bold text-slate-900">{{ users.total }}</span> data
+                        class="font-bold text-slate-900">{{
+                            users.total }}</span> data
                 </div>
                 <div class="flex gap-2">
                     <button @click="router.get(users.prev_page_url)" :disabled="!users.prev_page_url"
@@ -440,7 +494,7 @@ const getStatusConfig = (status) => {
                         <div class="flex items-center gap-4">
                             <img v-if="getAvatarUrl(selectedUser)" :src="getAvatarUrl(selectedUser)"
                                 :alt="selectedUser.name"
-                                class="w-16 h-16 rounded-full object-cover border-4 border-white shadow-sm" />
+                                class="w-16 h-16 rounded-full object-cover border-4 border-white shadow-sm object-top" />
                             <div v-else
                                 class="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xl border-4 border-white shadow-sm">
                                 {{ getInitials(selectedUser.name) }}
@@ -453,10 +507,11 @@ const getStatusConfig = (status) => {
                         </div>
 
                         <div class="flex gap-2">
-                            <span class="px-3 py-1 rounded-full text-xs font-bold border inline-flex items-center gap-1"
-                                :class="getRoleConfig(selectedUser).color">
-                                <component :is="getRoleConfig(selectedUser).icon" class="w-3 h-3" />
-                                {{ getRoleConfig(selectedUser).label }}
+                            <span v-for="(role, index) in getRoleConfig(selectedUser)" :key="index"
+                                class="px-3 py-1 rounded-full text-xs font-bold border inline-flex items-center gap-1"
+                                :class="role.color">
+                                <component :is="role.icon" class="w-3 h-3" />
+                                {{ role.label }}
                             </span>
                             <span class="px-3 py-1 rounded-full text-xs font-bold border"
                                 :class="getStatusConfig(selectedUser.status).color">
@@ -465,6 +520,10 @@ const getStatusConfig = (status) => {
                         </div>
 
                         <div class="grid grid-cols-1 gap-3 text-sm">
+                            <div class="flex items-center gap-3 text-slate-600">
+                                <GraduationCap class="w-5 h-5 text-slate-400" />
+                                <span>{{ selectedUser.university || '-' }}</span>
+                            </div>
                             <div class="flex items-center gap-3 text-slate-600">
                                 <Mail class="w-4 h-4 text-slate-400" />
                                 <span>{{ selectedUser.email }}</span>

@@ -126,12 +126,10 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(AuditLog::class);
     }
 
-    // data magang intern (current)
     public function currentInternship()
     {
         return $this->internshipsAsIntern()
-            ->where('status', 'active')
-            ->orWhere('status', 'extended')
+            ->whereIn('status', ['active', 'extended'])
             ->first();
     }
 
@@ -147,7 +145,7 @@ class User extends Authenticatable implements MustVerifyEmail
             $query->select('intern_id')
                 ->from('internships')
                 ->where('mentor_id', $this->id)
-                ->where('status', 'active');
+                ->whereIn('status', ['active', 'extended']);
         })->get();
     }
 

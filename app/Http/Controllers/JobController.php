@@ -54,7 +54,7 @@ class JobController extends Controller
         $stats = [
             'total' => $job->applicants()->count(),
             'pending' => $job->applicants()->where('status', 'pending')->count(),
-            'reviewed' => $job->applicants()->where('status', 'reviewed')->orWhere('status', 'interview')->count(),
+            'reviewed' => $job->applicants()->whereIn('status', ['reviewed', 'interview'])->count(),
             'rejected' => $job->applicants()->where('status', 'rejected')->count(),
             'accepted' => $job->applicants()->where('status', 'accepted')->count(),
         ];

@@ -25,7 +25,7 @@ class CheckRole
         if (!in_array($user->role, $roles)) {
             return $this->redirectToUserDashboard($user);
         }
-
+        
         if ($user->role === 'intern' && in_array('intern', $roles)) {
             $status = $user->getApplicationStatus();
 
