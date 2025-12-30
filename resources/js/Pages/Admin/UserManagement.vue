@@ -331,7 +331,7 @@ const getStatusConfig = (status) => {
                     </div>
                     <div>
                         <p class="text-2xl font-bold text-slate-900">{{ stats.active_intern }}</p>
-                        <p class="text-xs text-slate-500">Intern Aktif</p>
+                        <p class="text-xs text-slate-500">Intern</p>
                     </div>
                 </div>
             </div>
@@ -342,7 +342,7 @@ const getStatusConfig = (status) => {
                     </div>
                     <div>
                         <p class="text-2xl font-bold text-slate-900">{{ stats.active }}</p>
-                        <p class="text-xs text-slate-500">Aktif</p>
+                        <p class="text-xs text-slate-500">User Aktif</p>
                     </div>
                 </div>
             </div>
