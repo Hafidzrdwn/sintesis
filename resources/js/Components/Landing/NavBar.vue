@@ -62,10 +62,6 @@ const isLoggedIn = computed(() => {
 const user = computed(() => {
     return page.props.auth.user;
 });
-
-const getUserAvatar = (user) => {
-    return user?.avatar ? getAvatarUrl(user) : null;
-};
 </script>
 
 <template>
@@ -95,7 +91,7 @@ const getUserAvatar = (user) => {
                                     </p>
                                     <p class="text-xs text-gray-500 mt-1">Calon Intern</p>
                                 </div>
-                                <img v-if="getUserAvatar(user)" :src="getUserAvatar(user)" :alt="user.name"
+                                <img v-if="getAvatarUrl(user)" :src="getAvatarUrl(user)" :alt="user.name"
                                     class="h-10 w-10 object-cover object-top rounded-full bg-primary/10 ring-2 ring-white shadow-sm flex items-center justify-center text-primary font-bold text-lg">
                                 <div v-else
                                     class="h-10 w-10 rounded-full bg-primary/10 ring-2 ring-white shadow-sm flex items-center justify-center text-primary font-bold text-lg">
@@ -170,7 +166,7 @@ const getUserAvatar = (user) => {
             </div>
             <div v-else class="px-4 py-4 space-y-5">
                 <div class="flex gap-3 items-center justify-start">
-                    <img v-if="getUserAvatar(user)" :src="getUserAvatar(user)" :alt="user.name"
+                    <img v-if="getAvatarUrl(user)" :src="getAvatarUrl(user)" :alt="user.name"
                     class="h-10 w-10 object-cover object-top rounded-full bg-primary/10 ring-2 ring-white shadow-sm flex items-center justify-center text-primary font-bold text-lg">
                     <div v-else
                         class="h-10 w-10 rounded-full bg-primary/10 ring-2 ring-white shadow-sm flex items-center justify-center text-primary font-bold text-lg">

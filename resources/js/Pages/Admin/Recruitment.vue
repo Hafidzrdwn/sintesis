@@ -156,10 +156,6 @@ const getStatusConfig = (status) => {
     };
     return configs[status] || configs.pending;
 };
-
-const getUserAvatar = (applicant) => {
-    return applicant.user?.avatar ? getAvatarUrl(applicant.user) : null;
-};
 </script>
 
 <template>
@@ -292,7 +288,7 @@ const getUserAvatar = (applicant) => {
                             class="hover:bg-slate-50/50 transition-colors group">
                             <td class="px-6 py-4">
                                 <div class="flex flex-col items-start justify-center gap-3">
-                                    <img v-if="getUserAvatar(applicant)" :src="getUserAvatar(applicant)"
+                                    <img v-if="getAvatarUrl(applicant.user)" :src="getAvatarUrl(applicant.user)"
                                         :alt="applicant.full_name"
                                         class="size-12 rounded-full object-cover object-top ring-2 ring-white shadow-sm" />
                                     <div v-else
@@ -396,7 +392,7 @@ const getUserAvatar = (applicant) => {
                     <div class="p-6 flex flex-col gap-6 overflow-y-auto">
                         <!-- Profile Header -->
                         <div class="flex items-start gap-6">
-                            <img v-if="getUserAvatar(selectedApplicant)" :src="getUserAvatar(selectedApplicant)"
+                            <img v-if="getAvatarUrl(selectedApplicant.user)" :src="getAvatarUrl(selectedApplicant.user)"
                                 :alt="selectedApplicant.full_name"
                                 class="size-24 rounded-full object-cover object-top border-4 border-white shadow-sm flex-shrink-0" />
                             <div v-else

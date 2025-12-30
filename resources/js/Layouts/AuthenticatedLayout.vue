@@ -26,6 +26,7 @@ const menus = {
         { label: 'Dashboard', routeName: 'admin.dashboard', icon: 'dashboard', urlPrefix: '/admin/dashboard' },
         { label: 'Rekrutmen', routeName: 'admin.recruitment', icon: 'group_add', urlPrefix: '/admin/recruitment' },
         { label: 'Data User', routeName: 'admin.users', icon: 'manage_accounts', urlPrefix: '/admin/users' },
+        { label: 'Data Peserta Magang', routeName: 'admin.internships', icon: 'manage_accounts', urlPrefix: '/admin/internships' },
         { label: 'Monitoring Global', routeName: 'admin.monitoring', icon: 'analytics', urlPrefix: '/admin/monitoring' },
         { label: 'Audit Log', routeName: 'admin.audit', icon: 'security', urlPrefix: '/admin/audit' },
     ],
@@ -59,10 +60,6 @@ const isActive = (prefix) => {
 };
 
 const isSettingsActive = computed(() => page.url === '/profile');
-
-const getUserAvatar = (user) => {
-    return user?.avatar ? getAvatarUrl(user) : null;
-};
 </script>
 
 <template>
@@ -87,7 +84,7 @@ const getUserAvatar = (user) => {
                     <div class="flex flex-col h-full justify-between overflow-y-auto">
                         <div class="flex flex-col gap-6">
                              <div class="flex items-center gap-4 px-2 p-3 bg-slate-50 rounded-2xl border border-slate-100">
-                                <img v-if="getUserAvatar(user)" :src="getUserAvatar(user)"
+                                <img v-if="getAvatarUrl(user)" :src="getAvatarUrl(user)"
                                     :alt="user.name"
                                     class="size-11 ring-2 rounded-full object-cover object-top ring-white shadow shadow-primary"    
                                 >
@@ -138,7 +135,7 @@ const getUserAvatar = (user) => {
                 <div class="flex flex-col h-full justify-between">
                     <div class="flex flex-col gap-8">
                         <div class="flex items-center gap-4 px-2">
-                            <img v-if="getUserAvatar(user)" :src="getUserAvatar(user)" :alt="user.name"
+                            <img v-if="getAvatarUrl(user)" :src="getAvatarUrl(user)" :alt="user.name"
                                 class="size-14 ring-2 shadow shadow-primary object-cover object-top rounded-full ring-white">
                             <div v-else
                                 class="bg-center bg-no-repeat bg-cover rounded-full size-12 ring-2 ring-white flex items-center justify-center bg-slate-200 text-slate-500 font-bold text-lg uppercase">

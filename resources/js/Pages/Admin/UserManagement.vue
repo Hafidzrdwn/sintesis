@@ -212,10 +212,6 @@ const getStatusConfig = (status) => {
     };
     return configs[status] || configs.inactive;
 };
-
-const getUserAvatar = (user) => {
-    return user?.avatar ? getAvatarUrl(user) : null;
-};
 </script>
 
 <template>
@@ -346,7 +342,7 @@ const getUserAvatar = (user) => {
                             class="hover:bg-slate-50/50 transition-colors group">
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
-                                    <img v-if="getUserAvatar(user)" :src="getUserAvatar(user)" :alt="user.name"
+                                    <img v-if="getAvatarUrl(user)" :src="getAvatarUrl(user)" :alt="user.name"
                                         class="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-sm" />
                                     <div v-else
                                         class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
@@ -442,7 +438,7 @@ const getUserAvatar = (user) => {
 
                     <div class="p-6 flex flex-col gap-6">
                         <div class="flex items-center gap-4">
-                            <img v-if="getUserAvatar(selectedUser)" :src="getUserAvatar(selectedUser)"
+                            <img v-if="getAvatarUrl(selectedUser)" :src="getAvatarUrl(selectedUser)"
                                 :alt="selectedUser.name"
                                 class="w-16 h-16 rounded-full object-cover border-4 border-white shadow-sm" />
                             <div v-else
