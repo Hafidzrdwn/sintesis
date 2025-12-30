@@ -135,6 +135,11 @@ Route::middleware(['auth', 'verified', 'active', 'role:admin'])->prefix('admin')
     Route::put('/users/{user}', [App\Http\Controllers\Admin\UserManagementController::class, 'update'])->name('admin.users.update');
     Route::delete('/users/{user}', [App\Http\Controllers\Admin\UserManagementController::class, 'destroy'])->name('admin.users.destroy');
 
+    // Internship Management routes
+    Route::get('/internships', [App\Http\Controllers\Admin\InternshipController::class, 'index'])->name('admin.internships');
+    Route::patch('/internships/{internship}/status', [App\Http\Controllers\Admin\InternshipController::class, 'updateStatus'])->name('admin.internships.update-status');
+    Route::patch('/internships/{internship}/mentor', [App\Http\Controllers\Admin\InternshipController::class, 'updateMentor'])->name('admin.internships.update-mentor');
+
     Route::get('/monitoring', function () {
         return Inertia::render('Admin/GlobalMonitoring');
     })->name('admin.monitoring');
