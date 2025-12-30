@@ -15,7 +15,7 @@ class RecruitmentController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Applicant::with(['job', 'reviewer', 'user'])
+        $query = Applicant::with(['job', 'reviewer', 'user', 'institution'])
             ->latest();
 
         if ($request->filled('search')) {
@@ -23,7 +23,7 @@ class RecruitmentController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('full_name', 'like', "%{$search}%")
                   ->orWhereRelation('user', 'email', 'like', "%{$search}%")
-                  ->orWhere('university', 'like', "%{$search}%");
+                  ->orWhereRelation('institution', 'name', 'like', "%{$search}%");
             });
         }
 

@@ -51,7 +51,7 @@ class ApplicantController extends Controller
             // Step 1: Identity
             'full_name' => $validated['full_name'],
             'phone' => $validated['phone'],
-            'university' => $validated['university'],
+            'institution_id' => $validated['institution_id'],
             'referral' => $validated['referral'] ?? null,
             
             // Step 2: Competencies

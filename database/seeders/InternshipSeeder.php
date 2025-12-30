@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\Applicant;
+use App\Models\Institution;
 use App\Models\Internship;
 use App\Models\Job;
 use App\Models\User;
@@ -37,19 +39,24 @@ class InternshipSeeder extends Seeder
             // Assign jobs in rotation
             $job = $jobs[$index % $jobs->count()];
 
-            Internship::firstOrCreate(
-                ['intern_id' => $intern->id],
-                [
-                    'intern_id' => $intern->id,
-                    'mentor_id' => $mentor->id,
-                    'job_id' => $job->id,
-                    'custom_position' => null,
-                    'start_date' => now()->subMonths(rand(0, 2)),
-                    'end_date' => now()->addMonths(rand(2, 4)),
-                    'status' => 'active',
-                    'notes' => null,
-                ]
-            );
+            $applicant = Applicant::where('user_id', $intern->id)->first();
+
+            if($applicant->status === 'accepted') {
+                Internship::firstOrCreate(
+                    ['intern_id' => $intern->id],
+                    [
+                        'intern_id' => $intern->id,
+                        'mentor_id' => $mentor->id,
+                        'applicant_id' => $applicant->id,
+                        'job_id' => $job->id,
+                        'custom_position' => null,
+                        'start_date' => $applicant->start_date,
+                        'end_date' => $applicant->end_date,
+                        'status' => 'active',
+                        'notes' => 'Selamat & Semangat Magangnya!!',
+                    ]
+                );
+            }
         }
 
         $this->command->info(count($interns) . ' internship records created/updated');

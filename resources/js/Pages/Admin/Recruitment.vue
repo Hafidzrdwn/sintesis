@@ -304,7 +304,7 @@ const getStatusConfig = (status) => {
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-slate-600">
-                                <div class="font-medium">{{ applicant.university || '-' }}</div>
+                                <div class="font-medium">{{ applicant.institution?.name || '-' }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span
@@ -416,7 +416,7 @@ const getStatusConfig = (status) => {
                                 <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                                     <div class="flex items-center gap-2 text-slate-600">
                                         <GraduationCap class="w-4 h-4 text-slate-400 flex-shrink-0" />
-                                        <span>{{ selectedApplicant.university || '-' }}</span>
+                                        <span>{{ selectedApplicant.institution?.name || '-' }}</span>
                                     </div>
                                     <div class="flex items-center gap-2 text-slate-600">
                                         <Mail class="w-4 h-4 text-slate-400 flex-shrink-0" />

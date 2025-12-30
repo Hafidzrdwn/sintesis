@@ -169,8 +169,8 @@ defineOptions({
                                     <p class="font-semibold text-gray-900">{{ formatDate(application?.start_date) + ' - ' + formatDate(application?.end_date) }}</p>
                                 </div>
                                 <div>
-                                    <p class="text-gray-500 text-xs uppercase font-bold tracking-wider mb-1">Asal Universitas</p>
-                                    <p class="font-semibold text-gray-900">{{ application?.university || '-' }}</p>
+                                    <p class="text-gray-500 text-xs uppercase font-bold tracking-wider mb-1">Asal Sekolah / Universitas</p>
+                                    <p class="font-semibold text-gray-900">{{ application?.institution || '-' }}</p>
                                 </div>
                             </div>
                         </div>

@@ -23,6 +23,7 @@ class UserSeeder extends Seeder
             ['email' => 'admin@inosoft.com'],
             [
                 'name' => 'Super Admin',
+                'username' => 'admin',
                 'email' => 'admin@inosoft.com',
                 'phone' => '081234567890',
                 'password' => Hash::make('password'),
@@ -38,19 +39,52 @@ class UserSeeder extends Seeder
         $mentors = [
             [
                 'name' => 'Dr. Budi Santoso',
+                'username' => 'budisantoso',
                 'email' => 'budi.santoso@inosoft.com',
                 'phone' => '081234567891',
             ],
             [
                 'name' => 'Ir. Siti Rahayu',
+                'username' => 'sitirahayu',
                 'email' => 'siti.rahayu@inosoft.com',
                 'phone' => '081234567892',
             ],
             [
                 'name' => 'Ahmad Fauzi, M.Kom',
-                'email' => 'ahmad.fauzi@inosoft.com',
+                'username' => 'ahmadfauzi',
+                'email' => 'ahmadfauzi@inosoft.com',
                 'phone' => '081234567893',
             ],
+            [
+                'name' => 'Rizky Wisnu Adji, S.Kom',
+                'username' => 'rizkyadji',
+                'email' => 'rizkyadji@inosoft.com',
+                'phone' => '081234567894',
+            ],
+            [
+                'name' => 'Dewi Suksma Wati, M.T',
+                'username' => 'dewisw',
+                'email' => 'dewisw@inosoft.com',
+                'phone' => '081234567895',
+            ],
+            [
+                'name' => 'Fajar Nugroho',
+                'username' => 'fajarnugroho',
+                'email' => 'fajar.nugroho@inosoft.com',
+                'phone' => '081234567896',
+            ],
+            [
+                'name' => 'Putri Wulandari, S.T',
+                'username' => 'putriw',
+                'email' => 'putri.w@inosoft.com',
+                'phone' => '081234567897',
+            ],
+            [
+                'name' => 'Andi Kurniawan, M.Sc',
+                'username' => 'andikurniawan',
+                'email' => 'andi.kurniawan@inosoft.com',
+                'phone' => '081234567898',
+            ]
         ];
 
         foreach ($mentors as $mentorData) {
@@ -58,6 +92,7 @@ class UserSeeder extends Seeder
                 ['email' => $mentorData['email']],
                 [
                     'name' => $mentorData['name'],
+                    'username' => $mentorData['username'],
                     'email' => $mentorData['email'],
                     'phone' => $mentorData['phone'],
                     'password' => Hash::make('password'),
@@ -68,33 +103,38 @@ class UserSeeder extends Seeder
             );
             $mentor->assignRole('mentor');
         }
-        $this->command->info('3 Mentors created');
+        $this->command->info('8 Mentors created');
 
         // Create Interns
         $interns = [
             [
                 'name' => 'Dewi Lestari',
-                'email' => 'dewi.lestari@student.university.ac.id',
+                'username' => 'dewilestari',
+                'email' => 'dewi.lestari@gmail.com',
                 'phone' => '081234567894',
             ],
             [
                 'name' => 'Rizki Pratama',
-                'email' => 'rizki.pratama@student.university.ac.id',
+                'username' => 'rizkypratama',
+                'email' => 'rizki.pratama@gmail.com',
                 'phone' => '081234567895',
             ],
             [
                 'name' => 'Nurul Hidayah',
-                'email' => 'nurul.hidayah@student.university.ac.id',
+                'username' => 'nurulhidayah',
+                'email' => 'nurul.hidayah@gmail.com',
                 'phone' => '081234567896',
             ],
             [
                 'name' => 'Andi Wijaya',
-                'email' => 'andi.wijaya@student.university.ac.id',
+                'username' => 'andiwijaya',
+                'email' => 'andi.wijaya@gmail.com',
                 'phone' => '081234567897',
             ],
             [
                 'name' => 'Putri Ayu',
-                'email' => 'putri.ayu@student.university.ac.id',
+                'username' => 'putriayu',
+                'email' => 'putri.ayu@gmail.com',
                 'phone' => '081234567898',
             ],
         ];
@@ -104,6 +144,7 @@ class UserSeeder extends Seeder
                 ['email' => $internData['email']],
                 [
                     'name' => $internData['name'],
+                    'username' => $internData['username'],
                     'email' => $internData['email'],
                     'phone' => $internData['phone'],
                     'password' => Hash::make('password'),

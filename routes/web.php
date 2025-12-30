@@ -60,6 +60,9 @@ Route::get('/internship/apply/{slug?}', [JobController::class, 'apply'])
 Route::post('/internship/apply', [App\Http\Controllers\ApplicantController::class, 'store'])
     ->middleware(['auth', 'verified'])->name('internship.store');
 
+Route::post('/institutions', [App\Http\Controllers\InstitutionController::class, 'store'])
+    ->middleware(['auth', 'verified'])->name('institutions.store');
+
 /*
 |--------------------------------------------------------------------------
 | Intern Routes
@@ -147,9 +150,8 @@ Route::middleware(['auth', 'verified', 'active', 'role:admin'])->prefix('admin')
     Route::patch('/jobs/{job}/status', [App\Http\Controllers\Admin\JobManagementController::class, 'updateStatus'])->name('admin.jobs.update-status');
     Route::delete('/jobs/{job}', [App\Http\Controllers\Admin\JobManagementController::class, 'destroy'])->name('admin.jobs.destroy');
 
-    Route::get('/monitoring', function () {
-        return Inertia::render('Admin/GlobalMonitoring');
-    })->name('admin.monitoring');
+    // Global Monitoring routes
+    Route::get('/monitoring', [App\Http\Controllers\Admin\MonitoringController::class, 'index'])->name('admin.monitoring');
 
     Route::get('/audit', function () {
         return Inertia::render('Admin/AuditLog');
@@ -168,4 +170,4 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

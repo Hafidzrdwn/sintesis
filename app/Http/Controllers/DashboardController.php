@@ -51,7 +51,7 @@ class DashboardController extends Controller
                 'notes' => $applicant->notes,
                 'start_date' => $applicant->start_date,
                 'end_date' => $applicant->end_date,
-                'university' => $applicant->university,
+                'institution' => $applicant->institution->name,
             ] : null,
         ]);
     }

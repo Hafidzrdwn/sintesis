@@ -19,7 +19,7 @@ class Applicant extends Model
         // Step 1: Identity
         'full_name',
         'phone',
-        'university',
+        'institution_id',
         'referral',
         
         // Step 2: Competencies
@@ -108,4 +108,10 @@ class Applicant extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function institution(): BelongsTo
+    {
+        return $this->belongsTo(Institution::class);
+    }
 }
+

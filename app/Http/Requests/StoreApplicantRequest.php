@@ -26,7 +26,7 @@ class StoreApplicantRequest extends FormRequest
                 'max:255',
             ],
             'phone' => ['required', 'string', 'max:20'],
-            'university' => ['required', 'string', 'max:255'],
+            'institution_id' => ['required', 'uuid', 'exists:institutions,id'],
             'referral' => ['nullable', 'string', 'max:255'],
             
             // Step 2: Kompetensi
@@ -70,7 +70,8 @@ class StoreApplicantRequest extends FormRequest
             
             'phone.required' => 'Nomor WhatsApp wajib diisi.',
             
-            'university.required' => 'Nama sekolah/universitas wajib diisi.',
+            'institution_id.required' => 'Nama sekolah/universitas wajib dipilih/diisi.',
+            'institution_id.exists' => 'Nama sekolah/universitas tidak valid.',
             
             'self_description.required' => 'Deskripsi diri wajib diisi.',
             'self_description.min' => 'Deskripsi diri minimal 20 karakter.',

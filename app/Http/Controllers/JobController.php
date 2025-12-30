@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Institution;
 use App\Models\Job;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,26 +17,33 @@ class JobController extends Controller
     public function landing(): Response
     {
         $jobs = Job::select([
-            'id', 'title', 'slug', 'type', 'description', 
-            'location', 'duration', 'image', 'updated_at'
+            'id',
+            'title',
+            'slug',
+            'type',
+            'description',
+            'location',
+            'duration',
+            'image',
+            'updated_at'
         ])
-        ->where('status', 'open')
-        ->orderBy('updated_at', 'desc')
-        ->get()
-        ->map(function ($job) {
-            return [
-                'id' => $job->id,
-                'title' => $job->title,
-                'slug' => $job->slug,
-                'type' => $job->type,
-                'description' => $job->description,
-                'location' => $job->location,
-                'duration' => $job->duration,
-                'image' => $job->image,
-                'updatedAt' => $job->updated_at,
-                'href' => '/lowongan/' . $job->slug,
-            ];
-        });
+            ->where('status', 'open')
+            ->orderBy('updated_at', 'desc')
+            ->get()
+            ->map(function ($job) {
+                return [
+                    'id' => $job->id,
+                    'title' => $job->title,
+                    'slug' => $job->slug,
+                    'type' => $job->type,
+                    'description' => $job->description,
+                    'location' => $job->location,
+                    'duration' => $job->duration,
+                    'image' => $job->image,
+                    'updatedAt' => $job->updated_at,
+                    'href' => '/lowongan/' . $job->slug,
+                ];
+            });
 
         return Inertia::render('LandingPage', [
             'jobs' => $jobs,
@@ -99,14 +107,12 @@ class JobController extends Controller
     public function apply(?string $slug = null): Response|RedirectResponse
     {
         $user = request()->user();
-        
-        // Check if user can apply
+
         if (!$user->canApply()) {
             return redirect()->route('dashboard')
                 ->with('error', 'Anda sudah memiliki lamaran yang sedang diproses. Silakan tunggu pengumuman terlebih dahulu.');
         }
 
-        // Get all open jobs for dropdown
         $openJobs = Job::open()
             ->select('id', 'title', 'slug', 'type', 'location')
             ->orderBy('title')
@@ -119,7 +125,6 @@ class JobController extends Controller
                 'location' => $job->location,
             ]);
 
-        // Get selected job if slug provided
         $selectedJob = null;
         if ($slug) {
             $job = Job::where('slug', $slug)->open()->first();
@@ -134,9 +139,13 @@ class JobController extends Controller
             }
         }
 
+        $institutions = Institution::orderBy('name')
+            ->get(['id', 'name']);
+
         return Inertia::render('InternshipApplication', [
             'openJobs' => $openJobs,
             'selectedJob' => $selectedJob,
+            'institutions' => $institutions,
         ]);
     }
 }

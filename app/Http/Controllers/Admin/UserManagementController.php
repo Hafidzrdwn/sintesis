@@ -56,7 +56,7 @@ class UserManagementController extends Controller
             $user->has_active_internship = $user->role === 'intern' && $user->internshipsAsIntern->isNotEmpty() && $user->hasActiveInternship();
             $user->intern_position = ($user->role === 'intern' && $user->internshipsAsIntern->isNotEmpty()) ? $user->internshipsAsIntern->first()->position : null;
             $user->is_alumni = $user->role === 'intern' && $user->internshipsAsIntern->isNotEmpty() && $user->internshipsAsIntern->first()->status === 'completed';
-            $user->university = $user->applicant()->university ?? null;
+            $user->institution = $user->applicant()->institution->name ?? null;
             return $user;
         });
         
@@ -121,7 +121,7 @@ class UserManagementController extends Controller
             'role' => ['required', 'in:admin,mentor,candidate,active_intern'],
             'status' => ['required', 'in:active,inactive'],
             'use_custom_position' => ['boolean'],
-            'job_id' => ['nullable', 'required_if:use_custom_position,false,role,active_intern', 'exists:job_listings,id'],
+            'job_id' => ['nullable', 'required_if_all:use_custom_position,false,role,active_intern', 'exists:job_listings,id'],
             'custom_position' => ['nullable', 'required_if:use_custom_position,true', 'string', 'max:255'],
             'mentor_id' => ['nullable', 'required_if:role,active_intern', 'exists:users,id'],
             'start_date' => ['nullable', 'required_if:role,active_intern', 'date'],
@@ -143,7 +143,7 @@ class UserManagementController extends Controller
             'role.in' => 'Role tidak valid.',
             'status.required' => 'Status wajib dipilih.',
             'status.in' => 'Status tidak valid.',
-            'job_id.required_if' => 'Posisi wajib dipilih untuk Intern Aktif.',
+            'job_id.required_if_all' => 'Posisi wajib dipilih untuk Intern Aktif.',
             'job_id.exists' => 'Posisi tidak valid.',
             'custom_position.required_if' => 'Posisi custom wajib diisi.',
             'custom_position.max' => 'Posisi custom maksimal 255 karakter.',
@@ -205,7 +205,7 @@ class UserManagementController extends Controller
             'role' => ['required', 'in:admin,mentor,candidate,active_intern'],
             'status' => ['required', 'in:active,inactive'],
             'use_custom_position' => ['boolean'],
-            'job_id' => ['nullable', 'required_if:use_custom_position,false,role,active_intern', 'exists:job_listings,id'],
+            'job_id' => ['nullable', 'required_if_all:use_custom_position,false,role,active_intern', 'exists:job_listings,id'],
             'custom_position' => ['nullable', 'required_if:use_custom_position,true', 'string', 'max:255'],
             'mentor_id' => ['nullable', 'required_if:role,active_intern', 'exists:users,id'],
             'start_date' => ['nullable', 'required_if:role,active_intern', 'date'],
@@ -226,7 +226,7 @@ class UserManagementController extends Controller
             'role.in' => 'Role tidak valid.',
             'status.required' => 'Status wajib dipilih.',
             'status.in' => 'Status tidak valid.',
-            'job_id.required_if' => 'Posisi wajib dipilih untuk Intern Aktif.',
+            'job_id.required_if_all' => 'Posisi wajib dipilih untuk Intern Aktif.',
             'job_id.exists' => 'Posisi tidak valid.',
             'custom_position.required_if' => 'Posisi custom wajib diisi.',
             'custom_position.max' => 'Posisi custom maksimal 255 karakter.',

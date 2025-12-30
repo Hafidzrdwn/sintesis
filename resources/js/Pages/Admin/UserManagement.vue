@@ -389,11 +389,11 @@ const getStatusConfig = (status) => {
                         <tr v-for="user in users.data" :key="user.id"
                             class="hover:bg-slate-50/50 transition-colors group">
                             <td class="px-6 py-4">
-                                <div class="flex items-center gap-3">
+                                <div class="flex flex-col justify-center items-start gap-3">
                                     <img v-if="getAvatarUrl(user)" :src="getAvatarUrl(user)" :alt="user.name"
-                                        class="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-sm object-top" />
+                                        class="w-14 h-14 rounded-full object-cover ring-2 ring-white shadow-sm object-top" />
                                     <div v-else
-                                        class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
+                                        class="w-14 h-14 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
                                         {{ getInitials(user.name) }}
                                     </div>
                                     <div>
@@ -522,7 +522,7 @@ const getStatusConfig = (status) => {
                         <div class="grid grid-cols-1 gap-3 text-sm">
                             <div class="flex items-center gap-3 text-slate-600">
                                 <GraduationCap class="w-5 h-5 text-slate-400" />
-                                <span>{{ selectedUser.university || '-' }}</span>
+                                <span>{{ selectedUser.institution || '-' }}</span>
                             </div>
                             <div class="flex items-center gap-3 text-slate-600">
                                 <Mail class="w-4 h-4 text-slate-400" />
