@@ -522,6 +522,7 @@ defineOptions({ layout: LandingLayout })
                         <input v-model="form.other_skills"
                             class="w-full h-10 px-4 bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm placeholder:text-slate-400"
                             placeholder="Sebutkan bahasa pemrograman lain jika ada..." type="text" />
+                        <small clas="text-xs text-muted">Pisahkan dengan koma tanpa spasi (jika lebih dari 1).</small>
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-3">Database Dikuasai</label>
@@ -537,6 +538,7 @@ defineOptions({ layout: LandingLayout })
                         <input v-model="form.other_databases"
                             class="w-full h-10 px-4 bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm placeholder:text-slate-400"
                             placeholder="Sebutkan database lain jika ada..." type="text" />
+                        <small clas="text-xs text-muted">Pisahkan dengan koma tanpa spasi (jika lebih dari 1).</small>
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-3">Sistem Operasi Dikuasai</label>
@@ -552,6 +554,7 @@ defineOptions({ layout: LandingLayout })
                         <input v-model="form.other_os"
                             class="w-full h-10 px-4 bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm placeholder:text-slate-400"
                             placeholder="Sebutkan OS lain jika ada..." type="text" />
+                        <small clas="text-xs text-muted">Pisahkan dengan koma tanpa spasi (jika lebih dari 1).</small>
                     </div>
                 </div>
             </div>
