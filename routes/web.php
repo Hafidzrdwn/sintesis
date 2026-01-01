@@ -135,6 +135,9 @@ Route::middleware(['auth', 'verified', 'active', 'role:mentor'])->prefix('mentor
     Route::get('/evaluation', function () {
         return Inertia::render('Mentor/Evaluation');
     })->name('mentor.evaluation');
+
+    Route::get('/attendance', [App\Http\Controllers\Mentor\AttendanceMonitoringController::class, 'index'])
+        ->name('mentor.attendance');
 });
 
 /*
@@ -175,6 +178,10 @@ Route::middleware(['auth', 'verified', 'active', 'role:admin'])->prefix('admin')
 
     // Audit Log routes
     Route::get('/audit', [App\Http\Controllers\Admin\AuditLogController::class, 'index'])->name('admin.audit');
+
+    // Attendance Monitoring
+    Route::get('/attendance', [App\Http\Controllers\Admin\AttendanceMonitoringController::class, 'index'])
+        ->name('admin.attendance');
 });
 
 /*

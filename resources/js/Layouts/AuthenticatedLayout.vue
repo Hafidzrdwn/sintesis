@@ -25,15 +25,17 @@ const openLogoutModal = () => {
 const menus = {
     admin: [
         { label: 'Dashboard', routeName: 'admin.dashboard', icon: 'dashboard', urlPrefix: '/admin/dashboard' },
+        { label: 'Monitoring Global', routeName: 'admin.monitoring', icon: 'analytics', urlPrefix: '/admin/monitoring' },
         { label: 'Rekrutmen', routeName: 'admin.recruitment', icon: 'group_add', urlPrefix: '/admin/recruitment' },
         { label: 'Data User', routeName: 'admin.users', icon: 'manage_accounts', urlPrefix: '/admin/users' },
         { label: 'Data Peserta Magang', routeName: 'admin.internships', icon: 'badge', urlPrefix: '/admin/internships' },
+        { label: 'Monitoring Absensi', routeName: 'admin.attendance', icon: 'event_available', urlPrefix: '/admin/attendance' },
         { label: 'Lowongan', routeName: 'admin.jobs', icon: 'work', urlPrefix: '/admin/jobs' },
-        { label: 'Monitoring Global', routeName: 'admin.monitoring', icon: 'analytics', urlPrefix: '/admin/monitoring' },
         { label: 'Audit Log', routeName: 'admin.audit', icon: 'security', urlPrefix: '/admin/audit' },
     ],
     mentor: [
         { label: 'Dashboard', routeName: 'mentor.dashboard', icon: 'dashboard', urlPrefix: '/mentor/dashboard' },
+        { label: 'Monitoring Absensi', routeName: 'mentor.attendance', icon: 'event_available', urlPrefix: '/mentor/attendance' },
         { label: 'Manajemen Tugas', routeName: 'mentor.tasks', icon: 'task', urlPrefix: '/mentor/tasks' },
         { label: 'Review Logbook', routeName: 'mentor.logbook', icon: 'rate_review', urlPrefix: '/mentor/logbook' },
         { label: 'Penilaian Akhir', routeName: 'mentor.evaluation', icon: 'school', urlPrefix: '/mentor/evaluation' },
@@ -94,7 +96,7 @@ const isSettingsActive = computed(() => page.url === '/profile');
                                 </div>
                                 <div class="flex flex-col">
                                     <h1 class="text-text-main text-sm font-bold leading-tight line-clamp-1">{{ user.name
-                                        }}</h1>
+                                    }}</h1>
                                     <p class="text-text-secondary text-[10px] font-medium uppercase tracking-wide">{{
                                         roleLabel }}</p>
                                 </div>
