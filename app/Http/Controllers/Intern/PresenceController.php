@@ -7,9 +7,71 @@ use App\Models\Presence;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
 
 class PresenceController extends Controller
 {
+  public function index(Request $request)
+  {
+    $user = $request->user();
+
+    $month = $request->get('month', Carbon::now()->month);
+    $year = $request->get('year', Carbon::now()->year);
+    $search = $request->get('search', '');
+
+    $query = Presence::where('user_id', $user->id)
+      ->whereMonth('date', $month)
+      ->whereYear('date', $year)
+      ->orderBy('date', 'desc');
+
+    if ($search) {
+      $query->where(function ($q) use ($search) {
+        $q->whereDate('date', 'like', "%{$search}%")
+          ->orWhere('notes', 'like', "%{$search}%");
+      });
+    }
+
+    $attendances = $query->paginate(15)->withQueryString();
+
+    $monthStart = Carbon::create($year, $month, 1)->startOfMonth();
+    $monthEnd = Carbon::create($year, $month, 1)->endOfMonth();
+
+    $monthPresences = Presence::where('user_id', $user->id)
+      ->whereBetween('date', [$monthStart, $monthEnd])
+      ->get();
+
+    $stats = [
+      'present' => $monthPresences->where('status', 'present')->count(),
+      'late' => $monthPresences->where('status', 'late')->count(),
+      'leave' => $monthPresences->whereIn('status', ['leave', 'sick', 'permit'])->count(),
+      'absent' => $monthPresences->where('status', 'absent')->count(),
+    ];
+
+    $formattedAttendances = $attendances->through(function ($presence) {
+      return [
+        'id' => $presence->id,
+        'date' => $presence->date->format('Y-m-d'),
+        'date_formatted' => $presence->date->translatedFormat('l, d M Y'),
+        'check_in_time' => $presence->check_in_time ?? '-',
+        'check_out_time' => $presence->check_out_time ?? '-',
+        'attendance_mode' => $presence->attendance_mode,
+        'status' => $presence->status,
+        'notes' => $presence->notes ?? '-',
+        'working_hours' => $presence->getWorkingHours(),
+      ];
+    });
+
+    return Inertia::render('Intern/Absensi', [
+      'attendances' => $formattedAttendances,
+      'stats' => $stats,
+      'filters' => [
+        'month' => (int) $month,
+        'year' => (int) $year,
+        'search' => $search,
+      ],
+    ]);
+  }
+
   public function checkIn(Request $request)
   {
     $request->validate([
@@ -17,13 +79,13 @@ class PresenceController extends Controller
       'latitude' => 'required|numeric',
       'longitude' => 'required|numeric',
       'distance_meters' => 'required|numeric',
-      'photo' => 'required|string', // base64 image
+      'photo' => 'required|string',
+      'notes' => 'nullable|string|max:500',
     ]);
 
     $user = $request->user();
     $today = Carbon::today();
 
-    // Check if already checked in today
     $existingPresence = Presence::where('user_id', $user->id)
       ->whereDate('date', $today)
       ->first();
@@ -36,7 +98,6 @@ class PresenceController extends Controller
       ], 400);
     }
 
-    // Validate distance for WFO mode (max 100 meters)
     if ($request->attendance_mode === 'WFO' && $request->distance_meters > 100) {
       return response()->json([
         'success' => false,
@@ -44,19 +105,16 @@ class PresenceController extends Controller
       ], 400);
     }
 
-    // Save photo to storage
     $photoPath = $this->saveBase64Image($request->photo, $user->id, 'check_in');
 
-    // Determine status (late if after 09:00)
     $checkInTime = Carbon::now();
     $status = 'present';
-    $lateThreshold = Carbon::today()->setHour(9)->setMinute(0)->setSecond(0);
+    $lateThreshold = Carbon::today()->setHour(8)->setMinute(0)->setSecond(0);
 
     if ($checkInTime->gt($lateThreshold)) {
       $status = 'late';
     }
 
-    // Create or update presence record
     $presence = Presence::updateOrCreate(
       [
         'user_id' => $user->id,
@@ -70,6 +128,7 @@ class PresenceController extends Controller
         'attendance_mode' => $request->attendance_mode,
         'status' => $status,
         'check_in_photo' => $photoPath,
+        'notes' => $request->notes,
       ]
     );
 
@@ -93,13 +152,12 @@ class PresenceController extends Controller
       'latitude' => 'nullable|numeric',
       'longitude' => 'nullable|numeric',
       'distance_meters' => 'nullable|numeric',
-      'photo' => 'required|string', // base64 image
+      'photo' => 'required|string',
     ]);
 
     $user = $request->user();
     $today = Carbon::today();
 
-    // Find today's presence record
     $presence = Presence::where('user_id', $user->id)
       ->whereDate('date', $today)
       ->first();
@@ -118,10 +176,8 @@ class PresenceController extends Controller
       ], 400);
     }
 
-    // Save photo to storage
     $photoPath = $this->saveBase64Image($request->photo, $user->id, 'check_out');
 
-    // Update presence with check-out data
     $presence->update([
       'check_out_time' => Carbon::now()->format('H:i:s'),
       'check_out_latitude' => $request->latitude,
@@ -130,7 +186,6 @@ class PresenceController extends Controller
       'check_out_photo' => $photoPath,
     ]);
 
-    // Calculate working hours
     $workingHours = $presence->getWorkingHours();
 
     return response()->json([
@@ -168,18 +223,63 @@ class PresenceController extends Controller
     ]);
   }
 
+  public function requestLeave(Request $request)
+  {
+    $request->validate([
+      'date' => 'required|date|after_or_equal:today',
+      'type' => 'required|in:sick,leave,permit',
+      'notes' => 'required|string|max:500',
+    ]);
+
+    $user = $request->user();
+    $date = Carbon::parse($request->date);
+
+    $existingPresence = Presence::where('user_id', $user->id)
+      ->whereDate('date', $date)
+      ->first();
+
+    if ($existingPresence) {
+      return response()->json([
+        'success' => false,
+        'message' => 'Sudah ada data absensi untuk tanggal ini.',
+      ], 400);
+    }
+
+    $presence = Presence::create([
+      'user_id' => $user->id,
+      'date' => $date,
+      'status' => $request->type,
+      'notes' => $request->notes,
+      'attendance_mode' => 'WFH',
+    ]);
+
+    $typeLabels = [
+      'sick' => 'Sakit',
+      'leave' => 'Cuti',
+      'permit' => 'Izin',
+    ];
+
+    return response()->json([
+      'success' => true,
+      'message' => "Pengajuan {$typeLabels[$request->type]} berhasil disubmit untuk tanggal " . $date->format('d M Y'),
+      'presence' => [
+        'id' => $presence->id,
+        'date' => $presence->date->format('Y-m-d'),
+        'status' => $presence->status,
+        'notes' => $presence->notes,
+      ],
+    ]);
+  }
+
   private function saveBase64Image(string $base64Image, string $userId, string $type): string
   {
-    // Remove data URL prefix if exists
     $imageData = preg_replace('/^data:image\/\w+;base64,/', '', $base64Image);
     $imageData = base64_decode($imageData);
 
-    // Generate filename
     $date = Carbon::today()->format('Y-m-d');
     $filename = "{$userId}_{$date}_{$type}.png";
     $path = "presences/{$date}/{$filename}";
 
-    // Store file
     Storage::disk('public')->put($path, $imageData);
 
     return $path;

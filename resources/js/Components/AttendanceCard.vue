@@ -59,6 +59,7 @@ const isSubmitting = ref(false);
 const submitError = ref(null);
 const submitSuccess = ref(null);
 const presenceData = ref(props.todayPresence);
+const attendanceNotes = ref('');
 
 const CAMERA_STATE_KEY = 'sintesis_camera_active';
 const getSavedCameraState = () => {
@@ -326,6 +327,9 @@ const handleSubmit = async () => {
 
         if (!isCheckOut) {
             payload.attendance_mode = attendanceMode.value;
+            if (attendanceNotes.value.trim()) {
+                payload.notes = attendanceNotes.value.trim();
+            }
         }
 
         const response = await axios.post(endpoint, payload);
@@ -339,6 +343,7 @@ const handleSubmit = async () => {
                 emit('checkOutSuccess', response.data.presence);
             } else {
                 emit('checkInSuccess', response.data.presence);
+                attendanceNotes.value = '';
             }
 
             setTimeout(() => {
@@ -501,6 +506,17 @@ const handleSubmit = async () => {
                     <span class="text-sm font-medium">
                         Anda sudah Check-In pada {{ presenceData?.check_in_time }}. Ambil foto untuk Check-Out.
                     </span>
+                </div>
+
+                <div v-if="!hasCheckedIn" class="flex flex-col gap-2">
+                    <label class="text-xs font-medium text-slate-500 flex items-center gap-1">
+                        <span class="material-symbols-outlined scale-75">edit_note</span>
+                        Catatan (opsional)
+                    </label>
+                    <textarea v-model="attendanceNotes"
+                        placeholder="Contoh: WFH karena hujan, meeting di luar kantor, dll..."
+                        class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-slate-400 resize-none"
+                        rows="2"></textarea>
                 </div>
 
                 <button @click="handleSubmit" :disabled="!isButtonEnabled"

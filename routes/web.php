@@ -74,9 +74,8 @@ Route::middleware(['auth', 'verified', 'active', 'role:intern'])->prefix('intern
         return Inertia::render('InternDashboard');
     })->name('intern.dashboard');
 
-    Route::get('/attendance', function () {
-        return Inertia::render('Intern/Absensi');
-    })->name('intern.attendance');
+    Route::get('/attendance', [App\Http\Controllers\Intern\PresenceController::class, 'index'])
+        ->name('intern.attendance');
 
     Route::get('/tasks', function () {
         return Inertia::render('Intern/TugasSaya');
@@ -97,6 +96,8 @@ Route::middleware(['auth', 'verified', 'active', 'role:intern'])->prefix('intern
         ->name('intern.presence.checkOut');
     Route::get('/presence/today', [App\Http\Controllers\Intern\PresenceController::class, 'today'])
         ->name('intern.presence.today');
+    Route::post('/presence/leave', [App\Http\Controllers\Intern\PresenceController::class, 'requestLeave'])
+        ->name('intern.presence.requestLeave');
 });
 
 /*
