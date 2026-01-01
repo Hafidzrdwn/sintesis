@@ -4,7 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Applicant;
 use App\Models\Internship;
+use App\Models\Logbook;
+use App\Models\Presence;
+use App\Models\Task;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -18,14 +22,53 @@ class DashboardController extends Controller
         $user = $request->user();
         $status = $user->getApplicationStatus();
 
-        // Check for active/ongoing internship -> go to InternDashboard
         if ($user->hasActiveInternship() && $user->onGoingInternship()) {
             $internship = $user->currentInternship();
+
+            $tasks = Task::where('intern_id', $user->id)
+                ->whereIn('status', ['pending', 'in_progress', 'review', 'completed'])
+                ->orderByRaw("CASE 
+                    WHEN status = 'in_progress' THEN 1 
+                    WHEN status = 'pending' THEN 2 
+                    WHEN status = 'review' THEN 3 
+                    WHEN status = 'completed' THEN 4 
+                    ELSE 5 END")
+                ->orderBy('due_date')
+                ->take(5)
+                ->get()
+                ->map(fn($task) => [
+                    'id' => $task->id,
+                    'title' => $task->title,
+                    'description' => $task->description,
+                    'status' => $task->status,
+                    'priority' => $task->priority,
+                    'due_date' => $task->due_date?->format('Y-m-d'),
+                    'due_date_human' => $task->due_date?->translatedFormat('d M'),
+                    'is_overdue' => $task->isOverdue(),
+                    'days_until_due' => $task->getDaysUntilDue(),
+                ]);
+
+            $logbooks = Logbook::where('user_id', $user->id)
+                ->orderBy('date', 'desc')
+                ->take(3)
+                ->get()
+                ->map(fn($log) => [
+                    'id' => $log->id,
+                    'date' => $log->date->format('Y-m-d'),
+                    'date_human' => $log->date->translatedFormat('l, d M'),
+                    'activity' => $log->activity,
+                    'description' => $log->description,
+                    'status' => $log->status,
+                ]);
+
+            $todayPresence = Presence::where('user_id', $user->id)
+                ->whereDate('date', Carbon::today())
+                ->first();
 
             return Inertia::render('InternDashboard', [
                 'internship' => $internship ? [
                     'id' => $internship->id,
-                    'position' => $internship->position,
+                    'position' => $internship->custom_position ?? $internship->job?->title ?? '-',
                     'department' => $internship->department,
                     'start_date' => $internship->start_date->format('Y-m-d'),
                     'end_date' => $internship->end_date->format('Y-m-d'),
@@ -37,10 +80,18 @@ class DashboardController extends Controller
                     'progress_percentage' => $internship->getProgressPercentage(),
                     'remaining_days' => $internship->getRemainingDays(),
                 ] : null,
+                'tasks' => $tasks,
+                'logbooks' => $logbooks,
+                'todayPresence' => $todayPresence ? [
+                    'id' => $todayPresence->id,
+                    'check_in_time' => $todayPresence->check_in_time,
+                    'check_out_time' => $todayPresence->check_out_time,
+                    'status' => $todayPresence->status,
+                    'attendance_mode' => $todayPresence->attendance_mode,
+                ] : null,
             ]);
         }
 
-        // Check for terminated or completed internship
         $pastInternship = Internship::where('intern_id', $user->id)
             ->whereIn('status', ['terminated', 'completed'])
             ->with(['job:id,title', 'mentor:id,name'])
