@@ -85,9 +85,8 @@ Route::middleware(['auth', 'verified', 'active', 'role:intern'])->prefix('intern
         return Inertia::render('Intern/BukuLog');
     })->name('intern.logbook');
 
-    Route::get('/analytics', function () {
-        return Inertia::render('Intern/Analitik');
-    })->name('intern.analytics');
+    Route::get('/analytics', [App\Http\Controllers\Intern\AnalyticsController::class, 'index'])
+        ->name('intern.analytics');
 
     // Presence/Attendance API
     Route::post('/presence/check-in', [App\Http\Controllers\Intern\PresenceController::class, 'checkIn'])
