@@ -54,13 +54,31 @@ const formData = ref({
     task_id: '',
 });
 
-const statusTabs = [
+// Duration input as hours + minutes
+const durationHours = ref(1);
+const durationMinutes = ref(0);
+
+// Sync duration from hours + minutes to decimal
+const updateDuration = () => {
+    formData.value.duration_hours = durationHours.value + (durationMinutes.value / 60);
+};
+
+// Format duration for display (e.g., "1 jam 30 menit")
+const formatDuration = (decimalHours) => {
+    const hours = Math.floor(decimalHours);
+    const minutes = Math.round((decimalHours - hours) * 60);
+    if (minutes === 0) return `${hours} jam`;
+    if (hours === 0) return `${minutes} menit`;
+    return `${hours} jam ${minutes} menit`;
+};
+
+const statusTabs = computed(() => [
     { key: 'all', label: 'Semua', count: props.stats?.all || 0 },
     { key: 'draft', label: 'Draft', count: props.stats?.draft || 0 },
     { key: 'submitted', label: 'Diajukan', count: props.stats?.submitted || 0 },
     { key: 'approved', label: 'Disetujui', count: props.stats?.approved || 0 },
     { key: 'rejected', label: 'Ditolak', count: props.stats?.rejected || 0 },
-];
+]);
 
 const applyFilters = () => {
     router.get(route('intern.logbook'), {
@@ -111,6 +129,8 @@ const getStatusIcon = (status) => {
 
 const openCreateModal = () => {
     formData.value = { date: new Date().toISOString().split('T')[0], activity: '', description: '', duration_hours: 1, task_id: '' };
+    durationHours.value = 1;
+    durationMinutes.value = 0;
     isEditing.value = false;
     formError.value = null;
     formSuccess.value = null;
@@ -126,6 +146,11 @@ const openEditModal = (log) => {
         duration_hours: log.duration_hours,
         task_id: log.task_id || '',
     };
+    // Convert decimal hours to hours + minutes
+    durationHours.value = Math.floor(log.duration_hours);
+    const mins = Math.round((log.duration_hours - Math.floor(log.duration_hours)) * 60);
+    // Round to nearest 15 min interval
+    durationMinutes.value = [0, 15, 30, 45].reduce((a, b) => Math.abs(b - mins) < Math.abs(a - mins) ? b : a);
     isEditing.value = true;
     formError.value = null;
     formSuccess.value = null;
@@ -155,7 +180,7 @@ const saveLogbook = async () => {
 
         if (response.data.success) {
             formSuccess.value = response.data.message;
-            setTimeout(() => { closeFormModal(); router.reload(); }, 1000);
+            setTimeout(() => { closeFormModal(); router.reload({ only: ['logbooks', 'stats'] }); }, 1000);
         }
     } catch (error) {
         formError.value = error.response?.data?.message || 'Terjadi kesalahan.';
@@ -168,7 +193,7 @@ const deleteLogbook = async (id) => {
     if (!confirm('Yakin ingin menghapus jurnal ini?')) return;
     try {
         const response = await axios.delete(`/intern/logbook/${id}`);
-        if (response.data.success) { router.reload(); }
+        if (response.data.success) { router.reload({ only: ['logbooks', 'stats'] }); }
     } catch (error) {
         alert(error.response?.data?.message || 'Gagal menghapus.');
     }
@@ -179,7 +204,7 @@ const submitLogbook = async (id) => {
         const response = await axios.post(`/intern/logbook/${id}/submit`);
         if (response.data.success) {
             closeDetailModal();
-            router.reload();
+            router.reload({ only: ['logbooks', 'stats'] });
         }
     } catch (error) {
         alert(error.response?.data?.message || 'Gagal submit.');
@@ -224,8 +249,8 @@ const submitLogbook = async (id) => {
                 <p class="text-xs text-red-600">Ditolak</p>
             </div>
             <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 text-center">
-                <p class="text-2xl font-black text-blue-600">{{ stats?.total_hours || 0 }}</p>
-                <p class="text-xs text-blue-600">Total Jam</p>
+                <p class="text-lg font-black text-blue-600">{{ formatDuration(stats?.total_hours || 0) }}</p>
+                <p class="text-xs text-blue-600">Total Durasi</p>
             </div>
         </div>
 
@@ -238,7 +263,7 @@ const submitLogbook = async (id) => {
                         {{ tab.label }}
                         <span class="text-[10px] px-1.5 py-0.5 rounded-full"
                             :class="activeStatus === tab.key ? 'bg-primary/10 text-primary' : 'bg-slate-200 text-slate-500'">{{
-                            tab.count }}</span>
+                                tab.count }}</span>
                     </button>
                 </div>
                 <div class="flex items-center gap-2">
@@ -288,7 +313,7 @@ const submitLogbook = async (id) => {
                                     log.description }}</p>
                             </td>
                             <td class="px-6 py-4 text-slate-500 text-xs">{{ log.task_title || '-' }}</td>
-                            <td class="px-6 py-4 text-slate-600 font-mono text-xs">{{ log.duration_hours }} jam</td>
+                            <td class="px-6 py-4 text-slate-600 text-xs">{{ formatDuration(log.duration_hours) }}</td>
                             <td class="px-6 py-4">
                                 <span
                                     class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border"
@@ -366,9 +391,28 @@ const submitLogbook = async (id) => {
                                 class="px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:bg-slate-50" />
                         </div>
                         <div class="flex flex-col gap-1">
-                            <label class="text-xs font-medium text-slate-600">Durasi (jam)</label>
-                            <input type="number" v-model="formData.duration_hours" min="0.5" max="24" step="0.5"
-                                class="px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+                            <label class="text-xs font-medium text-slate-600">Durasi Kerja</label>
+                            <div class="flex items-center gap-2">
+                                <div class="flex items-center gap-1">
+                                    <select v-model="durationHours" @change="updateDuration"
+                                        class="w-16 px-2 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary text-center">
+                                        <option v-for="h in 24" :key="h - 1" :value="h - 1">{{ h - 1 }}</option>
+                                    </select>
+                                    <span class="text-sm text-slate-500">jam</span>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <select v-model="durationMinutes" @change="updateDuration"
+                                        class="w-16 px-2 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary text-center">
+                                        <option :value="0">0</option>
+                                        <option :value="15">15</option>
+                                        <option :value="30">30</option>
+                                        <option :value="45">45</option>
+                                    </select>
+                                    <span class="text-sm text-slate-500">menit</span>
+                                </div>
+                            </div>
+                            <p class="text-xs text-slate-400 mt-1">Total: {{ formatDuration(formData.duration_hours) }}
+                            </p>
                         </div>
                     </div>
                     <div class="flex flex-col gap-1">
