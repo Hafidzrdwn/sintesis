@@ -34,6 +34,8 @@ class Task extends Model
         'rating',
         'started_at',
         'completed_at',
+        'submission_notes',
+        'submission_files',
     ];
 
     /**
@@ -47,6 +49,7 @@ class Task extends Model
             'due_date' => 'date',
             'started_at' => 'datetime',
             'completed_at' => 'datetime',
+            'submission_files' => 'array',
         ];
     }
 

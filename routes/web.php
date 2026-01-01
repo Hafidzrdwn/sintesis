@@ -124,9 +124,21 @@ Route::middleware(['auth', 'verified', 'active', 'role:mentor'])->prefix('mentor
         return Inertia::render('Mentor/Dashboard');
     })->name('mentor.dashboard');
 
-    Route::get('/tasks', function () {
-        return Inertia::render('Mentor/TaskManagement');
-    })->name('mentor.tasks');
+    // Task Management
+    Route::get('/tasks', [App\Http\Controllers\Mentor\TaskController::class, 'index'])
+        ->name('mentor.tasks');
+    Route::post('/tasks', [App\Http\Controllers\Mentor\TaskController::class, 'store'])
+        ->name('mentor.tasks.store');
+    Route::put('/tasks/{task}', [App\Http\Controllers\Mentor\TaskController::class, 'update'])
+        ->name('mentor.tasks.update');
+    Route::delete('/tasks/{task}', [App\Http\Controllers\Mentor\TaskController::class, 'destroy'])
+        ->name('mentor.tasks.destroy');
+    Route::post('/tasks/{task}/approve', [App\Http\Controllers\Mentor\TaskController::class, 'approve'])
+        ->name('mentor.tasks.approve');
+    Route::post('/tasks/{task}/reject', [App\Http\Controllers\Mentor\TaskController::class, 'reject'])
+        ->name('mentor.tasks.reject');
+    Route::post('/tasks/{task}/cancel', [App\Http\Controllers\Mentor\TaskController::class, 'cancel'])
+        ->name('mentor.tasks.cancel');
 
     Route::get('/logbook', function () {
         return Inertia::render('Mentor/LogbookReview');

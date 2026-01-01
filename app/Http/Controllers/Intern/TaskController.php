@@ -56,6 +56,8 @@ class TaskController extends Controller
         'days_until_due' => $task->getDaysUntilDue(),
         'started_at' => $task->started_at?->format('d M Y H:i'),
         'completed_at' => $task->completed_at?->format('d M Y H:i'),
+        'submission_notes' => $task->submission_notes,
+        'submission_files' => $task->submission_files,
       ];
     });
 
@@ -106,7 +108,30 @@ class TaskController extends Controller
       return response()->json(['success' => false, 'message' => 'Tugas tidak dapat disubmit.'], 400);
     }
 
-    $task->update(['status' => 'review']);
+    $request->validate([
+      'notes' => 'nullable|string|max:2000',
+      'files' => 'nullable|array|max:5',
+      'files.*' => 'file|mimes:jpg,jpeg,png,gif,pdf,doc,docx,xls,xlsx,zip|max:10240',
+    ]);
+
+    $filePaths = [];
+    if ($request->hasFile('files')) {
+      foreach ($request->file('files') as $file) {
+        $path = $file->store('task-submissions/' . $task->id, 'public');
+        $filePaths[] = [
+          'name' => $file->getClientOriginalName(),
+          'path' => '/storage/' . $path,
+          'size' => $file->getSize(),
+          'type' => $file->getMimeType(),
+        ];
+      }
+    }
+
+    $task->update([
+      'status' => 'review',
+      'submission_notes' => $request->notes,
+      'submission_files' => $filePaths ?: null,
+    ]);
 
     return response()->json([
       'success' => true,
