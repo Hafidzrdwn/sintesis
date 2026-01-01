@@ -68,13 +68,13 @@ class AnalyticsController extends Controller
 
     $internshipProgress = null;
     if ($internship) {
-      $startDate = Carbon::parse($internship->start_date);
-      $endDate = Carbon::parse($internship->end_date);
-      $now = Carbon::now();
+      $startDate = Carbon::parse($internship->start_date)->startOfDay();
+      $endDate = Carbon::parse($internship->end_date)->startOfDay();
+      $now = Carbon::now()->startOfDay();
 
-      $totalDays = $startDate->diffInDays($endDate);
-      $elapsedDays = $startDate->diffInDays($now);
-      $remainingDays = $now->diffInDays($endDate, false);
+      $totalDays = $startDate->diffInDays($endDate) + 1;
+      $elapsedDays = max(0, $startDate->diffInDays(min($now, $endDate)) + 1);
+      $remainingDays = max(0, $totalDays - $elapsedDays);
 
       $progress = $totalDays > 0
         ? min(100, round(($elapsedDays / $totalDays) * 100, 1))
@@ -84,8 +84,8 @@ class AnalyticsController extends Controller
         'start_date' => $internship->start_date->translatedFormat('d M Y'),
         'end_date' => $internship->end_date->translatedFormat('d M Y'),
         'progress' => (int) $progress,
-        'elapsed_days' => max(0, (int) $elapsedDays),
-        'remaining_days' => max(0, (int) $remainingDays),
+        'elapsed_days' => (int) $elapsedDays,
+        'remaining_days' => (int) $remainingDays,
         'total_days' => (int) $totalDays,
       ];
     }
