@@ -27,9 +27,7 @@ class CheckRole
         }
         
         if ($user->role === 'intern' && in_array('intern', $roles)) {
-            $status = $user->getApplicationStatus();
-
-            if ($status !== 'accepted' && !$user->hasActiveInternship()) {
+            if (!$user->hasActiveInternship()) {
                 return redirect('/dashboard');
             }
         }

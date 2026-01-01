@@ -38,10 +38,11 @@ class AuthenticatedSessionController extends Controller
         }
 
         $user = $request->user();
-        $status = $user->getApplicationStatus();
-        $route = ($status === 'accepted' || $user->hasActiveInternship()) ? 'intern.dashboard' : 'dashboard';
+        if ($user->hasActiveInternship() && $user->onGoingInternship()) {
+            return redirect()->route('intern.dashboard');
+        }
 
-        return redirect()->intended(route($route, absolute: false));
+        return redirect()->intended(route('dashboard', absolute: false));
     }
 
     /**

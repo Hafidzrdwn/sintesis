@@ -95,6 +95,14 @@ class GoogleController extends Controller
             ->with('error', 'Email belum terdaftar. Silakan daftar terlebih dahulu.');
     }
 
+    private function handleRedirectDashboard($user, $message = null) {
+        $route = ($user->hasActiveInternship() && $user->onGoingInternship()) ? 'intern.dashboard' : 'dashboard';
+        
+        return redirect()
+            ->route($route)
+            ->with('success', $message);
+    }
+
     /**
      * Handle existing user - Auto-merge Google ID and login
      */
@@ -124,8 +132,7 @@ class GoogleController extends Controller
             ? 'Selamat datang kembali, ' . $user->name . '!'
             : 'Akun Google berhasil terhubung. Selamat datang, ' . $user->name . '!';
 
-        return redirect()->to('/dashboard')
-            ->with('success', $message);
+        return $this->handleRedirectDashboard($user, $message);
     }
 
     /**
@@ -134,13 +141,12 @@ class GoogleController extends Controller
     private function handleNewRegistration($googleUser, Request $request): RedirectResponse
     {
         try {
-            // Create new user with Google data
             $user = User::create([
                 'name' => $googleUser->getName(),
                 'email' => $googleUser->getEmail(),
                 'google_id' => $googleUser->getId(),
                 'avatar' => $googleUser->getAvatar(),
-                'password' => Hash::make(Str::random(32)), // Random secure password for OAuth users
+                'password' => Hash::make(Str::random(32)), 
                 'role' => 'intern',
                 'status' => 'active',
                 'email_verified_at' => now(), 
@@ -151,9 +157,7 @@ class GoogleController extends Controller
 
             $this->logRegistration($user, $request);
 
-            return redirect()->to('/dashboard')
-                ->with('success', 'Pendaftaran berhasil! Selamat datang di SINTESIS, ' . $user->name . '!');
-
+            return $this->handleRedirectDashboard($user, 'Pendaftaran berhasil! Selamat datang di SINTESIS, ' . $user->name . '!');
         } catch (Exception $e) {
             Log::error('Google registration error: ' . $e->getMessage());
             

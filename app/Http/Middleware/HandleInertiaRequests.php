@@ -32,7 +32,7 @@ class HandleInertiaRequests extends Middleware
         $user = $request->user();
         $internPosition = null;
 
-        if ($user && $user->role === 'intern') {
+        if ($user && $user->role === 'intern' && $user->hasActiveInternship()) {
             $activeInternship = $user->currentInternship()
                 ->with('job:id,title')
                 ->first();

@@ -8,9 +8,13 @@ import { formatDate, formatDateTime } from '@/utils/helpers';
 const props = defineProps({
     applicationStatus: {
         type: String,
-        default: 'none', 
+        default: 'none',
     },
     application: {
+        type: Object,
+        default: null,
+    },
+    internship: {
         type: Object,
         default: null,
     },
@@ -58,6 +62,26 @@ const currentStatus = computed(() => {
     return statusConfig[props.application.status] || statusConfig.pending;
 });
 
+const internshipStatusConfig = {
+    terminated: {
+        label: 'Magang Dihentikan',
+        color: 'red',
+        icon: 'block',
+        message: 'Magang Anda telah dihentikan. Silakan lihat catatan dari HR untuk informasi lebih lanjut.',
+    },
+    completed: {
+        label: 'Alumni SINTESIS',
+        color: 'emerald',
+        icon: 'school',
+        message: 'Selamat! Anda telah menyelesaikan program magang di SINTESIS. Terima kasih atas kontribusi Anda.',
+    },
+};
+
+const internshipStatus = computed(() => {
+    if (!props.internship) return null;
+    return internshipStatusConfig[props.internship.status] || null;
+});
+
 defineOptions({
     layout: LandingLayout,
 });
@@ -68,7 +92,6 @@ defineOptions({
     <Head title="Dashboard Calon Intern" />
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-10 pb-16 overflow-hidden">
-        <!-- Header -->
         <header class="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
                 <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Dashboard Calon Intern</h1>
@@ -98,20 +121,104 @@ defineOptions({
             </div>
         </header>
 
+        <!-- Terminated Internship State -->
+        <section v-if="internship?.status === 'terminated'"
+            class="bg-gradient-to-br from-red-50 to-rose-50 rounded-xl border border-red-200 p-8 mb-6">
+            <div class="flex items-start gap-4">
+                <div class="p-3 bg-red-100 rounded-xl flex items-center justify-center">
+                    <span class="material-symbols-outlined text-red-600 scale-110">block</span>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-xl font-bold text-red-900 mb-2">{{ internshipStatus?.label }}</h3>
+                    <p class="text-sm text-red-700 mb-4">{{ internshipStatus?.message }}</p>
+
+                    <div class="bg-white/60 rounded-lg p-4 border border-red-100 mb-4">
+                        <div class="grid sm:grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <p class="text-gray-500 text-xs uppercase font-bold mb-1">Posisi</p>
+                                <p class="font-semibold text-gray-900">{{ internship?.position }}</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500 text-xs uppercase font-bold mb-1">Mentor</p>
+                                <p class="font-semibold text-gray-900">{{ internship?.mentor_name || '-' }}</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500 text-xs uppercase font-bold mb-1">Periode</p>
+                                <p class="font-semibold text-gray-900">{{ formatDate(internship?.start_date) }} - {{
+                                    formatDate(internship?.end_date) }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-if="internship?.notes" class="bg-red-100/50 rounded-lg p-4 border border-red-200">
+                        <p class="text-xs uppercase font-bold text-red-700 mb-1">Catatan dari Admin/HR</p>
+                        <p class="text-sm text-red-800 font-medium">{{ internship.notes }}</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Completed Internship (Alumni) State -->
+        <section v-if="internship?.status === 'completed'"
+            class="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 p-8 mb-6">
+            <div class="flex items-start gap-4">
+                <div class="p-3 bg-emerald-100 rounded-xl flex items-center justify-center">
+                    <span class="material-symbols-outlined text-emerald-600 scale-110">school</span>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-xl font-bold text-emerald-900 mb-2">{{ internshipStatus?.label }}</h3>
+                    <p class="text-sm text-emerald-700 mb-4">{{ internshipStatus?.message }}</p>
+
+                    <div class="bg-white/60 rounded-lg p-4 border border-emerald-100 mb-4">
+                        <div class="grid sm:grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <p class="text-gray-500 text-xs uppercase font-bold mb-1">Posisi</p>
+                                <p class="font-semibold text-gray-900">{{ internship?.position }}</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500 text-xs uppercase font-bold mb-1">Mentor</p>
+                                <p class="font-semibold text-gray-900">{{ internship?.mentor_name || '-' }}</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500 text-xs uppercase font-bold mb-1">Periode Magang</p>
+                                <p class="font-semibold text-gray-900">{{ formatDate(internship?.start_date) }} - {{
+                                    formatDate(internship?.end_date) }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-if="internship?.notes"
+                        class="bg-emerald-100/50 rounded-lg p-4 border border-emerald-200 mb-4">
+                        <p class="text-xs uppercase font-bold text-emerald-700 mb-1">Catatan dari Admin/HR</p>
+                        <p class="text-sm text-emerald-800 font-medium">{{ internship.notes }}</p>
+                    </div>
+
+                    <div class="flex flex-wrap gap-3">
+                        <BaseButton v-if="internship?.certificate_url" :href="internship.certificate_url"
+                            target="_blank" variant="primary">
+                            <span class="material-symbols-outlined">download</span>
+                            Download Sertifikat
+                        </BaseButton>
+                        <BaseButton href="/#lowongan" variant="outlinePrimary">
+                            <span class="material-symbols-outlined">work</span>
+                            Lihat Lowongan Magang Baru
+                        </BaseButton>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <div class="flex flex-col gap-6">
-            <!-- ========================================
-                 EMPTY STATE: No Application
-            ======================================== -->
             <section v-if="applicationStatus === 'none'"
                 class="bg-gradient-to-br from-primary/5 to-blue-50 rounded-xl border border-primary/20 p-8 text-center">
                 <div class="max-w-lg mx-auto">
-                    <div
-                        class="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
+                    <div class="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
                         <span class="material-symbols-outlined text-primary text-4xl">work</span>
                     </div>
                     <h2 class="text-2xl font-bold text-gray-900 mb-3">Belum Ada Lamaran</h2>
                     <p class="text-gray-600 mb-6">
-                        Anda belum mengajukan lamaran magang. Pilih posisi yang tersedia dan mulai perjalanan karir Anda bersama kami!
+                        Anda belum mengajukan lamaran magang. Pilih posisi yang tersedia dan mulai perjalanan karir Anda
+                        bersama kami!
                     </p>
                     <BaseButton href="/#lowongan" size="lg">
                         <span class="material-symbols-outlined">search</span>
@@ -119,14 +226,9 @@ defineOptions({
                     </BaseButton>
                 </div>
             </section>
-
-            <!-- ========================================
-                 APPLICATION STATUS: Has Application
-            ======================================== -->
             <section v-else
                 class="bg-white rounded-xl border border-gray-200 shadow-[0_2px_8px_rgba(0,0,0,0.04)] overflow-hidden">
                 <div class="grid lg:grid-cols-5 h-full">
-                    <!-- Left: Application Details -->
                     <div
                         class="lg:col-span-3 p-6 sm:p-8 flex flex-col border-b lg:border-b-0 lg:border-r border-gray-200 bg-gray-50/50">
                         <div class="flex-1">
@@ -143,50 +245,60 @@ defineOptions({
                                     <h2 class="text-xl font-bold text-gray-900 leading-tight">
                                         {{ application?.position_applied || 'Posisi Magang' }}
                                     </h2>
-                                    <p class="text-sm text-gray-500 mt-1">Diajukan: {{ formatDateTime(application?.created_at) }}</p>
+                                    <p class="text-sm text-gray-500 mt-1">Diajukan: {{
+                                        formatDateTime(application?.created_at) }}</p>
                                 </div>
                             </div>
 
-                            <!-- Status Alert -->
-                            <div v-if="currentStatus" 
-                                :class="[
-                                    'border-l-4 rounded-r-lg p-4 mb-6',
-                                    `bg-${currentStatus.color}-50 border-${currentStatus.color}-400`
-                                ]">
-                                <h3 :class="`text-sm font-bold text-${currentStatus.color}-900 flex items-center gap-2`">
+                            <div v-if="currentStatus" :class="[
+                                'border-l-4 rounded-r-lg p-4 mb-6',
+                                `bg-${currentStatus.color}-50 border-${currentStatus.color}-400`
+                            ]">
+                                <h3
+                                    :class="`text-lg font-bold text-${currentStatus.color}-900 flex items-center gap-2`">
                                     <span class="material-symbols-outlined text-[18px]">{{ currentStatus.icon }}</span>
                                     {{ currentStatus.label }}
                                 </h3>
                                 <p :class="`text-sm text-${currentStatus.color}-800 mt-1.5 leading-relaxed`">
                                     {{ currentStatus.message }}
                                 </p>
+                                <p v-if="application?.notes"
+                                    :class="`text-base font-semibold text-${currentStatus.color}-800 mt-1.5 leading-relaxed`">
+                                    Feedback Reviewer/HR : {{ application?.notes }}
+                                </p>
+                                <BaseButton v-if="application?.status === 'accepted'" :href="route('intern.dashboard')"
+                                    size="md" class="mt-3" variant="outlinePrimary">
+                                    Akses Dashboard Intern disini
+                                    <span class="material-symbols-outlined scale-75">arrow_outward</span>
+                                </BaseButton>
                             </div>
 
-                            <!-- Application Info -->
                             <div class="grid grid-cols-2 gap-y-4 gap-x-8 text-sm border-t border-gray-200 pt-5 mt-auto">
                                 <div>
-                                    <p class="text-gray-500 text-xs uppercase font-bold tracking-wider mb-1">Tanggal Magang</p>
+                                    <p class="text-gray-500 text-xs uppercase font-bold tracking-wider mb-1">Tanggal
+                                        Magang</p>
                                     <p class="font-semibold text-gray-900">{{ formatDate(application?.start_date) + ' - ' + formatDate(application?.end_date) }}</p>
                                 </div>
                                 <div>
-                                    <p class="text-gray-500 text-xs uppercase font-bold tracking-wider mb-1">Asal Sekolah / Universitas</p>
+                                    <p class="text-gray-500 text-xs uppercase font-bold tracking-wider mb-1">Asal
+                                        Sekolah / Universitas</p>
                                     <p class="font-semibold text-gray-900">{{ application?.institution || '-' }}</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Right: Progress Timeline -->
                     <div class="lg:col-span-2 p-6 sm:p-8 bg-white flex flex-col">
-                        <h3 class="font-bold text-lg text-gray-900 mb-6 flex items-center gap-2 pb-4 border-b border-gray-100">
+                        <h3
+                            class="font-bold text-lg text-gray-900 mb-6 flex items-center gap-2 pb-4 border-b border-gray-100">
                             <span class="material-symbols-outlined text-primary">history_edu</span>
                             Riwayat Progres
                         </h3>
                         <div class="relative pl-1 flex-1">
-                            <!-- Step 1: Registration -->
                             <div class="relative flex gap-4 pb-8">
                                 <div class="flex flex-col items-center relative z-10">
-                                    <div class="h-8 w-8 rounded-full bg-primary flex items-center justify-center shadow-md shadow-primary/20">
+                                    <div
+                                        class="h-8 w-8 rounded-full bg-primary flex items-center justify-center shadow-md shadow-primary/20">
                                         <span class="material-symbols-outlined text-white font-bold">check</span>
                                     </div>
                                     <div class="w-0.5 h-full bg-primary/20 absolute top-8"></div>
@@ -197,30 +309,32 @@ defineOptions({
                                 </div>
                             </div>
 
-                            <!-- Step 2: Application Submitted -->
                             <div class="relative flex gap-4 pb-8">
                                 <div class="flex flex-col items-center relative z-10">
-                                    <div class="h-8 w-8 rounded-full bg-primary flex items-center justify-center shadow-md shadow-primary/20">
-                                        <span class="material-symbols-outlined text-white font-bold">mark_email_read</span>
+                                    <div
+                                        class="h-8 w-8 rounded-full bg-primary flex items-center justify-center shadow-md shadow-primary/20">
+                                        <span
+                                            class="material-symbols-outlined text-white font-bold">mark_email_read</span>
                                     </div>
                                     <div class="w-0.5 h-full bg-primary/20 absolute top-8"></div>
                                 </div>
                                 <div>
                                     <p class="text-md font-bold text-gray-900">Lamaran Terkirim</p>
-                                    <p class="text-sm text-gray-500 mt-0.5 font-medium">{{ formatDateTime(application?.created_at) }}</p>
+                                    <p class="text-sm text-gray-500 mt-0.5 font-medium">{{
+                                        formatDateTime(application?.created_at) }}</p>
                                 </div>
                             </div>
 
-                            <!-- Step 3: Review Status -->
                             <div class="relative flex gap-4 pb-8">
                                 <div class="flex flex-col items-center relative z-10">
                                     <div :class="[
                                         'h-8 w-8 rounded-full flex items-center justify-center',
-                                        application?.status === 'pending' 
+                                        application?.status === 'pending'
                                             ? 'bg-white border-2 border-amber-400'
                                             : 'bg-primary shadow-md shadow-primary/20'
                                     ]">
-                                        <div v-if="application?.status === 'pending'" class="h-2.5 w-2.5 rounded-full bg-amber-400 animate-pulse"></div>
+                                        <div v-if="application?.status === 'pending'"
+                                            class="h-2.5 w-2.5 rounded-full bg-amber-400 animate-pulse"></div>
                                         <span v-else class="material-symbols-outlined text-white font-bold">check</span>
                                     </div>
                                     <div class="w-0.5 h-full bg-gray-100 absolute top-8"></div>
@@ -234,21 +348,23 @@ defineOptions({
                                         class="inline-flex mt-1 items-center px-2 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-100">
                                         Sedang Berlangsung
                                     </span>
-                                    <p v-else class="text-sm text-gray-500 mt-0.5">{{ formatDateTime(application?.reviewed_at) || 'Selesai' }}</p>
+                                    <p v-else class="text-sm text-gray-500 mt-0.5">{{
+                                        formatDateTime(application?.reviewed_at) || 'Selesai' }}</p>
                                 </div>
                             </div>
 
-                            <!-- Step 4: Final Result -->
                             <div class="relative flex gap-4">
                                 <div class="flex flex-col items-center relative z-10">
                                     <div :class="[
                                         'h-8 w-8 rounded-full flex items-center justify-center',
                                         application?.status === 'accepted' ? 'bg-green-500' :
-                                        application?.status === 'rejected' ? 'bg-red-500' :
-                                        'bg-gray-50 border border-gray-200 text-gray-300'
+                                            application?.status === 'rejected' ? 'bg-red-500' :
+                                                'bg-gray-50 border border-gray-200 text-gray-300'
                                     ]">
-                                        <span v-if="application?.status === 'accepted'" class="material-symbols-outlined text-white">check_circle</span>
-                                        <span v-else-if="application?.status === 'rejected'" class="material-symbols-outlined text-white">cancel</span>
+                                        <span v-if="application?.status === 'accepted'"
+                                            class="material-symbols-outlined text-white">check_circle</span>
+                                        <span v-else-if="application?.status === 'rejected'"
+                                            class="material-symbols-outlined text-white">cancel</span>
                                         <span v-else class="material-symbols-outlined">groups</span>
                                     </div>
                                 </div>
@@ -256,15 +372,15 @@ defineOptions({
                                     <p :class="[
                                         'text-md font-medium',
                                         application?.status === 'accepted' ? 'text-green-600' :
-                                        application?.status === 'rejected' ? 'text-red-600' :
-                                        'text-gray-400'
+                                            application?.status === 'rejected' ? 'text-red-600' :
+                                                'text-gray-400'
                                     ]">
-                                        {{ application?.status === 'accepted' ? 'Diterima!' : 
-                                           application?.status === 'rejected' ? 'Tidak Lolos' : 'Pengumuman' }}
+                                        {{ application?.status === 'accepted' ? 'Diterima!' :
+                                            application?.status === 'rejected' ? 'Tidak Lolos' : 'Pengumuman' }}
                                     </p>
                                     <p class="text-sm text-gray-400 mt-0.5">
-                                        {{ application?.status === 'accepted' || application?.status === 'rejected' 
-                                            ? formatDateTime(application?.reviewed_at) 
+                                        {{ application?.status === 'accepted' || application?.status === 'rejected'
+                                            ? formatDateTime(application?.reviewed_at)
                                             : 'Menunggu jadwal' }}
                                     </p>
                                 </div>
@@ -274,16 +390,14 @@ defineOptions({
                 </div>
             </section>
 
-            <!-- ========================================
-                 REJECTED: Apply Again CTA
-            ======================================== -->
             <section v-if="applicationStatus === 'rejected'"
                 class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-6">
                 <div class="flex flex-col sm:flex-row items-center gap-4">
                     <div class="flex-1">
                         <h3 class="text-lg font-bold text-gray-900 mb-2">Jangan Menyerah!</h3>
                         <p class="text-sm text-gray-600">
-                            Kami membuka lowongan baru setiap bulan. Tingkatkan skill Anda dan coba lagi di kesempatan berikutnya.
+                            Kami membuka lowongan baru setiap bulan. Tingkatkan skill Anda dan coba lagi di kesempatan
+                            berikutnya.
                         </p>
                     </div>
                     <BaseButton href="/#lowongan" variant="outlinePrimary">
@@ -293,11 +407,7 @@ defineOptions({
                 </div>
             </section>
 
-            <!-- ========================================
-                 BOTTOM: Explore & Help Section
-            ======================================== -->
             <section class="grid md:grid-cols-3 gap-6">
-                <!-- Explore Card -->
                 <div
                     class="md:col-span-2 bg-gradient-to-br from-white to-blue-50 rounded-xl border border-gray-200 p-6 flex flex-col-reverse sm:flex-row items-center gap-6 relative overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)] group">
                     <div
@@ -310,14 +420,16 @@ defineOptions({
                             <span>Peluang Baru</span>
                         </div>
                         <h3 class="text-lg font-bold text-gray-900 mb-2">
-                            {{ applicationStatus === 'none' ? 'Mulai Karir Anda!' : 'Masih mencari posisi yang lebih cocok?' }}
+                            {{ applicationStatus === 'none' ? 'Mulai Karir Anda!' : 'Masih mencari posisi yang lebih cocok ? ' }}
                         </h3>
                         <p class="text-sm text-gray-600 mb-5 leading-relaxed font-body">
-                            Jangan lewatkan kesempatan emas lainnya. Kami membuka lowongan baru setiap minggunya di berbagai divisi.
+                            Jangan lewatkan kesempatan emas lainnya. Kami membuka lowongan baru setiap minggunya di
+                            berbagai divisi.
                         </p>
                         <BaseButton href="/#lowongan">
                             <span>Jelajahi Lowongan</span>
-                            <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                            <span
+                                class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
                         </BaseButton>
                     </div>
                     <div
@@ -326,7 +438,6 @@ defineOptions({
                     </div>
                 </div>
 
-                <!-- Help Card -->
                 <div
                     class="md:col-span-1 bg-white rounded-xl border border-gray-200 p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04)] flex flex-col justify-center">
                     <h3 class="text-base font-bold text-gray-900 mb-4">Butuh Bantuan?</h3>
@@ -339,11 +450,13 @@ defineOptions({
                                     <span class="material-symbols-outlined text-[18px]">help_center</span>
                                 </div>
                                 <div class="flex-1">
-                                    <p class="text-sm font-bold text-gray-700 group-hover:text-primary transition-colors">
+                                    <p
+                                        class="text-sm font-bold text-gray-700 group-hover:text-primary transition-colors">
                                         Pusat Bantuan</p>
                                     <p class="text-[10px] text-gray-500">FAQ & Panduan</p>
                                 </div>
-                                <span class="material-symbols-outlined text-gray-300 text-[18px] group-hover:text-primary">chevron_right</span>
+                                <span
+                                    class="material-symbols-outlined text-gray-300 text-[18px] group-hover:text-primary">chevron_right</span>
                             </a>
                         </li>
                         <li>
@@ -354,11 +467,13 @@ defineOptions({
                                     <span class="material-symbols-outlined text-[18px]">support_agent</span>
                                 </div>
                                 <div class="flex-1">
-                                    <p class="text-sm font-bold text-gray-700 group-hover:text-primary transition-colors">
+                                    <p
+                                        class="text-sm font-bold text-gray-700 group-hover:text-primary transition-colors">
                                         Hubungi HR</p>
                                     <p class="text-[10px] text-gray-500">Senin - Jumat, 09:00 - 17:00</p>
                                 </div>
-                                <span class="material-symbols-outlined text-gray-300 text-[18px] group-hover:text-primary">chevron_right</span>
+                                <span
+                                    class="material-symbols-outlined text-gray-300 text-[18px] group-hover:text-primary">chevron_right</span>
                             </a>
                         </li>
                     </ul>

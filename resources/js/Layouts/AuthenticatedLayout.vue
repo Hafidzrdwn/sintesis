@@ -89,7 +89,7 @@ const isSettingsActive = computed(() => page.url === '/profile');
                                 <img v-if="getAvatarUrl(user)" :src="getAvatarUrl(user)" :alt="user.name"
                                     class="size-11 ring-2 rounded-full object-cover object-top ring-white shadow shadow-primary">
                                 <div v-else
-                                    class="bg-center bg-no-repeat bg-cover rounded-full size-10 ring-2 ring-white flex items-center justify-center bg-slate-200 text-slate-500 font-bold text-lg uppercase">
+                                    class="bg-center bg-no-repeat bg-cover rounded-full size-11 ring-2 ring-white flex items-center justify-center bg-slate-200 text-slate-500 font-bold text-lg uppercase">
                                     {{ getInitials(user.name) }}
                                 </div>
                                 <div class="flex flex-col">
@@ -138,7 +138,7 @@ const isSettingsActive = computed(() => page.url === '/profile');
                         <img v-if="getAvatarUrl(user)" :src="getAvatarUrl(user)" :alt="user.name"
                             class="size-14 ring-2 shadow shadow-primary object-cover object-top rounded-full ring-white">
                         <div v-else
-                            class="bg-center bg-no-repeat bg-cover rounded-full size-12 ring-2 ring-white flex items-center justify-center bg-slate-200 text-slate-500 font-bold text-lg uppercase">
+                            class="bg-center bg-no-repeat bg-cover rounded-full size-14 ring-2 ring-white flex items-center justify-center bg-slate-200 text-slate-500 font-bold text-lg uppercase">
                             {{ getInitials(user.name) }}
                         </div>
                         <div class="flex flex-col gap-1">
