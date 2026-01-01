@@ -312,7 +312,7 @@ const actionLabels = {
               {{ internship.notes || '-' }}
             </td>
               <td class="px-6 py-4">
-                <div class="flex items-center justify-end gap-1">
+                <div class="flex items-center justify-start gap-1">
                   <button @click="openDetail(internship)"
                     class="p-2 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all cursor-pointer"
                     title="Lihat Detail">
