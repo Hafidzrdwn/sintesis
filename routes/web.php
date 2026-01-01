@@ -122,9 +122,7 @@ Route::middleware(['auth', 'verified', 'active', 'role:mentor'])->prefix('mentor
 */
 
 Route::middleware(['auth', 'verified', 'active', 'role:admin'])->prefix('admin')->group(function () {
-    Route::get('/dashboard', function () {
-        return Inertia::render('Admin/Dashboard');
-    })->name('admin.dashboard');
+    Route::get('/dashboard', [App\Http\Controllers\Admin\AdminDashboardController::class, 'index'])->name('admin.dashboard');
 
     // Recruitment routes
     Route::get('/recruitment', [App\Http\Controllers\Admin\RecruitmentController::class, 'index'])->name('admin.recruitment');
