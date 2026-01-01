@@ -153,9 +153,8 @@ Route::middleware(['auth', 'verified', 'active', 'role:admin'])->prefix('admin')
     // Global Monitoring routes
     Route::get('/monitoring', [App\Http\Controllers\Admin\MonitoringController::class, 'index'])->name('admin.monitoring');
 
-    Route::get('/audit', function () {
-        return Inertia::render('Admin/AuditLog');
-    })->name('admin.audit');
+    // Audit Log routes
+    Route::get('/audit', [App\Http\Controllers\Admin\AuditLogController::class, 'index'])->name('admin.audit');
 });
 
 /*
