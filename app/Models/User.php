@@ -134,6 +134,7 @@ class User extends Authenticatable implements MustVerifyEmail
     public function currentInternship()
     {
         return $this->internshipsAsIntern()
+            ->with('job:id,title')
             ->whereIn('status', ['active', 'extended'])
             ->first();
     }

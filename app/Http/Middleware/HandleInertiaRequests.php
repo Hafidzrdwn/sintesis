@@ -33,13 +33,11 @@ class HandleInertiaRequests extends Middleware
         $internPosition = null;
 
         if ($user && $user->role === 'intern' && $user->hasActiveInternship()) {
-            $activeInternship = $user->currentInternship()
-                ->with('job:id,title')
-                ->first();
+            $activeInternship = $user->currentInternship();
 
             if ($activeInternship) {
-                $internPosition = $activeInternship->custom_position
-                    ?? $activeInternship->job?->title
+                $internPosition = $activeInternship->job?->title
+                    ?? $activeInternship->custom_position
                     ?? null;
             }
         }
