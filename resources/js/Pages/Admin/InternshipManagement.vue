@@ -258,7 +258,6 @@ const actionLabels = {
       </div>
     </div>
 
-    <!-- Table -->
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full">
@@ -269,7 +268,8 @@ const actionLabels = {
               <th class="px-6 py-4 text-left font-bold text-slate-700">Mentor</th>
               <th class="px-6 py-4 text-left font-bold text-slate-700">Periode</th>
               <th class="px-6 py-4 font-bold text-slate-700">Status</th>
-              <th class="px-6 py-4 text-right font-bold text-slate-700">Aksi</th>
+              <th class="px-6 py-4 font-bold text-slate-700">Catatan</th>
+              <th class="px-6 py-4 text-left font-bold text-slate-700">Aksi</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100" v-if="!isLoading">
@@ -304,10 +304,13 @@ const actionLabels = {
               </td>
               <td class="px-6 py-4 text-center">
                 <span class="px-3 py-1 rounded-full text-xs font-bold border"
-                  :class="getStatusConfig(internship.status).color">
-                  {{ getStatusConfig(internship.status).label }}
-                </span>
-              </td>
+                :class="getStatusConfig(internship.status).color">
+                {{ getStatusConfig(internship.status).label }}
+              </span>
+            </td>
+            <td class="px-6 py-4 text-slate-600 text-sm">
+              {{ internship.notes || '-' }}
+            </td>
               <td class="px-6 py-4">
                 <div class="flex items-center justify-end gap-1">
                   <button @click="openDetail(internship)"
@@ -343,14 +346,14 @@ const actionLabels = {
               </td>
             </tr>
             <tr v-if="internships.data.length === 0">
-              <td colspan="6" class="px-6 py-12 text-center text-slate-500">
+              <td colspan="7" class="px-6 py-12 text-center text-slate-500">
                 Tidak ada data internship ditemukan.
               </td>
             </tr>
           </tbody>
           <tbody v-else class="divide-y divide-slate-100">
             <tr>
-              <td colspan="6" class="px-6 py-12 text-center text-slate-500">
+              <td colspan="7" class="px-6 py-12 text-center text-slate-500">
                 Loading data...
               </td>
             </tr>
