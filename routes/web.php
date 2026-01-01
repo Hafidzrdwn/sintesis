@@ -77,9 +77,15 @@ Route::middleware(['auth', 'verified', 'active', 'role:intern'])->prefix('intern
     Route::get('/attendance', [App\Http\Controllers\Intern\PresenceController::class, 'index'])
         ->name('intern.attendance');
 
-    Route::get('/tasks', function () {
-        return Inertia::render('Intern/TugasSaya');
-    })->name('intern.tasks');
+    // Tasks
+    Route::get('/tasks', [App\Http\Controllers\Intern\TaskController::class, 'index'])
+        ->name('intern.tasks');
+    Route::get('/tasks/{task}', [App\Http\Controllers\Intern\TaskController::class, 'show'])
+        ->name('intern.tasks.show');
+    Route::post('/tasks/{task}/start', [App\Http\Controllers\Intern\TaskController::class, 'start'])
+        ->name('intern.tasks.start');
+    Route::post('/tasks/{task}/submit', [App\Http\Controllers\Intern\TaskController::class, 'submitForReview'])
+        ->name('intern.tasks.submit');
 
     Route::get('/logbook', function () {
         return Inertia::render('Intern/BukuLog');
