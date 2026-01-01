@@ -87,9 +87,17 @@ Route::middleware(['auth', 'verified', 'active', 'role:intern'])->prefix('intern
     Route::post('/tasks/{task}/submit', [App\Http\Controllers\Intern\TaskController::class, 'submitForReview'])
         ->name('intern.tasks.submit');
 
-    Route::get('/logbook', function () {
-        return Inertia::render('Intern/BukuLog');
-    })->name('intern.logbook');
+    // Logbook
+    Route::get('/logbook', [App\Http\Controllers\Intern\LogbookController::class, 'index'])
+        ->name('intern.logbook');
+    Route::post('/logbook', [App\Http\Controllers\Intern\LogbookController::class, 'store'])
+        ->name('intern.logbook.store');
+    Route::put('/logbook/{logbook}', [App\Http\Controllers\Intern\LogbookController::class, 'update'])
+        ->name('intern.logbook.update');
+    Route::delete('/logbook/{logbook}', [App\Http\Controllers\Intern\LogbookController::class, 'destroy'])
+        ->name('intern.logbook.destroy');
+    Route::post('/logbook/{logbook}/submit', [App\Http\Controllers\Intern\LogbookController::class, 'submit'])
+        ->name('intern.logbook.submit');
 
     Route::get('/analytics', [App\Http\Controllers\Intern\AnalyticsController::class, 'index'])
         ->name('intern.analytics');
