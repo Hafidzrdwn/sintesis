@@ -47,6 +47,9 @@ const showAcceptModal = ref(false);
 const selectedMentor = ref('');
 const acceptNotes = ref('');
 
+const showRejectModal = ref(false);
+const rejectNotes = ref('');
+
 let searchTimeout = null;
 watch(searchQuery, (value) => {
     clearTimeout(searchTimeout);
@@ -112,11 +115,40 @@ const updateStatus = (status) => {
         return;
     }
 
+    if (status === 'rejected') {
+        openRejectModal();
+        return;
+    }
+
     router.patch(route('admin.recruitment.update-status', selectedApplicant.value.id), {
         status: status,
     }, {
         preserveScroll: true,
         onSuccess: () => {
+            closeDetail();
+        },
+    });
+};
+
+const openRejectModal = () => {
+    showRejectModal.value = true;
+};
+
+const closeRejectModal = () => {
+    showRejectModal.value = false;
+    rejectNotes.value = '';
+};
+
+const confirmReject = () => {
+    if (!selectedApplicant.value) return;
+
+    router.patch(route('admin.recruitment.update-status', selectedApplicant.value.id), {
+        status: 'rejected',
+        notes: rejectNotes.value || null,
+    }, {
+        preserveScroll: true,
+        onSuccess: () => {
+            closeRejectModal();
             closeDetail();
         },
     });
@@ -280,6 +312,7 @@ const getStatusConfig = (status) => {
                             <th class="px-6 py-4 font-bold text-slate-700">Nama Referensi Staff Inosoft</th>
                             <th class="px-6 py-4 font-bold text-slate-700">Direview Oleh</th>
                             <th class="px-6 py-4 font-bold text-slate-700">Status</th>
+                            <th class="px-6 py-4 font-bold text-slate-700">Catatan</th>
                             <th class="px-6 py-4 font-bold text-slate-700 text-right">Aksi</th>
                         </tr>
                     </thead>
@@ -323,9 +356,12 @@ const getStatusConfig = (status) => {
                             </td>
                             <td class="px-6 py-4">
                                 <span class="px-3 py-1 rounded-full text-xs font-bold border"
-                                    :class="getStatusConfig(applicant.status).color">
-                                    {{ getStatusConfig(applicant.status).label }}
-                                </span>
+                                :class="getStatusConfig(applicant.status).color">
+                                {{ getStatusConfig(applicant.status).label }}
+                                 </span>
+                             </td>
+                            <td class="px-6 py-4 text-slate-600 text-xs">
+                                {{ applicant.notes || '-' }}
                             </td>
                             <td class="px-6 py-4">
                                 <button @click="openDetail(applicant)"
@@ -335,14 +371,14 @@ const getStatusConfig = (status) => {
                             </td>
                         </tr>
                         <tr v-if="applicants.data.length === 0">
-                            <td colspan="8" class="px-6 py-12 text-center text-slate-500">
+                            <td colspan="9" class="px-6 py-12 text-center text-slate-500">
                                 Tidak ada data pendaftar ditemukan.
                             </td>
                         </tr>
                     </tbody>
                     <tbody v-else class="divide-y divide-slate-100">
                         <tr>
-                            <td colspan="8" class="px-6 py-12 text-center text-slate-500">
+                            <td colspan="9" class="px-6 py-12 text-center text-slate-500">
                                 Loading data...
                             </td>
                         </tr>
@@ -628,6 +664,46 @@ const getStatusConfig = (status) => {
                             <BaseButton variant="success" full @click="confirmAccept">
                                 <CheckCircle class="w-4 h-4" />
                                 Konfirmasi
+                            </BaseButton>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Transition>
+    </Teleport>
+
+    <!-- Reject Modal -->
+    <Teleport to="body">
+        <Transition name="modal">
+            <div v-if="showRejectModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
+                <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" @click="closeRejectModal"></div>
+                <div class="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
+                    <div class="bg-danger/10 px-6 py-4 border-b border-danger/20 flex items-center justify-between">
+                        <h3 class="font-bold text-lg text-danger">Tolak Lamaran</h3>
+                        <button @click="closeRejectModal"
+                            class="p-1 rounded-full hover:bg-danger/20 transition-colors cursor-pointer">
+                            <X class="w-6 h-6 text-danger" />
+                        </button>
+                    </div>
+                    <div class="p-6 flex flex-col gap-4">
+                        <p class="text-slate-600 text-sm">
+                            Apakah Anda yakin ingin menolak lamaran dari
+                            <span class="font-semibold text-slate-900">{{ selectedApplicant?.full_name }}</span>?
+                        </p>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Alasan Penolakan
+                                (Opsional)</label>
+                            <textarea v-model="rejectNotes" rows="3"
+                                class="w-full px-4 py-2 rounded-xl border-slate-200 focus:border-danger focus:ring-danger text-sm resize-none"
+                                placeholder="Contoh: Kualifikasi belum sesuai, posisi sudah terisi..."></textarea>
+                        </div>
+
+                        <div class="flex gap-3 pt-2">
+                            <BaseButton variant="secondary" full @click="closeRejectModal">Batal</BaseButton>
+                            <BaseButton variant="danger" full @click="confirmReject">
+                                <XCircle class="w-4 h-4" />
+                                Tolak Lamaran
                             </BaseButton>
                         </div>
                     </div>
