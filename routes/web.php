@@ -117,9 +117,8 @@ Route::middleware(['auth', 'verified', 'active', 'role:intern'])->prefix('intern
 */
 
 Route::middleware(['auth', 'verified', 'active', 'role:mentor'])->prefix('mentor')->group(function () {
-    Route::get('/dashboard', function () {
-        return Inertia::render('Mentor/Dashboard');
-    })->name('mentor.dashboard');
+    Route::get('/dashboard', [App\Http\Controllers\Mentor\DashboardController::class, 'index'])
+        ->name('mentor.dashboard');
 
     // Task Management
     Route::get('/tasks', [App\Http\Controllers\Mentor\TaskController::class, 'index'])
