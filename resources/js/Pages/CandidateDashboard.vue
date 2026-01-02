@@ -20,6 +20,8 @@ const props = defineProps({
     },
 });
 
+console.log(props.internship)
+
 const page = usePage();
 const user = computed(() => page.props.auth.user);
 
@@ -70,10 +72,10 @@ const internshipStatusConfig = {
         message: 'Magang Anda telah dihentikan. Silakan lihat catatan dari HR untuk informasi lebih lanjut.',
     },
     completed: {
-        label: 'Alumni SINTESIS',
+        label: 'Alumni Inosoft',
         color: 'emerald',
         icon: 'school',
-        message: 'Selamat! Anda telah menyelesaikan program magang di SINTESIS. Terima kasih atas kontribusi Anda.',
+        message: 'Selamat! Anda telah menyelesaikan program magang di PT Inosoft Trans Sistem. Terima kasih atas kontribusi Anda.',
     },
 };
 
@@ -193,8 +195,20 @@ defineOptions({
                         <p class="text-sm text-emerald-800 font-medium">{{ internship.notes }}</p>
                     </div>
 
+                    <div v-if="internship?.mentor_recommendation"
+                        class="bg-emerald-100/50 rounded-lg p-4 border border-emerald-200 mb-4">
+                        <p class="text-xs uppercase font-bold text-emerald-700 mb-1">Rekomendasi dari Mentor</p>
+                        <div class="text-sm text-emerald-800 font-medium rich-content" v-html="internship.mentor_recommendation"></div>
+                    </div>
+
+                    <div v-if="internship?.mentor_final_notes"
+                        class="bg-emerald-100/50 rounded-lg p-4 border border-emerald-200 mb-4">
+                        <p class="text-xs uppercase font-bold text-emerald-700 mb-1">Catatan dari Mentor</p>
+                        <div class="text-sm text-emerald-800 font-medium rich-content" v-html="internship.mentor_final_notes"></div>
+                    </div>
+
                     <div class="flex flex-wrap gap-3">
-                        <BaseButton v-if="internship?.certificate_url" :href="internship.certificate_url"
+                        <BaseButton v-if="internship?.certificate_url" :href="internship.certificate_url" external
                             target="_blank" variant="primary">
                             <span class="material-symbols-outlined">download</span>
                             Download Sertifikat

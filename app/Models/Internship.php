@@ -29,6 +29,7 @@ class Internship extends Model
         'end_date',
         'status',
         'notes',
+        'certificate_url',
     ];
 
     /**
@@ -70,8 +71,8 @@ class Internship extends Model
      */
     public function isCurrent(): bool
     {
-        return $this->isActive() 
-            && $this->start_date <= now() 
+        return $this->isActive()
+            && $this->start_date <= now()
             && $this->end_date >= now();
     }
 
@@ -95,7 +96,7 @@ class Internship extends Model
         if ($totalDays === 0) {
             return 100;
         }
-        
+
         $passedDays = $this->start_date->diffInDays(now());
         return min(100, max(0, ($passedDays / $totalDays) * 100));
     }
@@ -158,5 +159,13 @@ class Internship extends Model
     public function logbooks(): HasMany
     {
         return $this->hasMany(Logbook::class);
+    }
+
+    /**
+     * Evaluation for this internship
+     */
+    public function evaluation(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Evaluation::class);
     }
 }

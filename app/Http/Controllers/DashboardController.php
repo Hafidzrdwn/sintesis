@@ -94,7 +94,7 @@ class DashboardController extends Controller
 
         $pastInternship = Internship::where('intern_id', $user->id)
             ->whereIn('status', ['terminated', 'completed'])
-            ->with(['job:id,title', 'mentor:id,name'])
+            ->with(['job:id,title', 'mentor:id,name', 'evaluation:id,internship_id,recommendation,final_notes'])
             ->orderBy('updated_at', 'desc')
             ->first();
 
@@ -121,6 +121,8 @@ class DashboardController extends Controller
                 'start_date' => $pastInternship->start_date->format('Y-m-d'),
                 'end_date' => $pastInternship->end_date->format('Y-m-d'),
                 'notes' => $pastInternship->notes,
+                'mentor_recommendation' => $pastInternship->evaluation?->recommendation,
+                'mentor_final_notes' => $pastInternship->evaluation?->final_notes,
                 'certificate_url' => $pastInternship->certificate_url,
             ] : null,
         ]);

@@ -145,9 +145,15 @@ Route::middleware(['auth', 'verified', 'active', 'role:mentor'])->prefix('mentor
     Route::post('/logbook/{logbook}/reject', [App\Http\Controllers\Mentor\LogbookController::class, 'reject'])
         ->name('mentor.logbook.reject');
 
-    Route::get('/evaluation', function () {
-        return Inertia::render('Mentor/Evaluation');
-    })->name('mentor.evaluation');
+    // Evaluation
+    Route::get('/evaluation', [App\Http\Controllers\Mentor\EvaluationController::class, 'index'])
+        ->name('mentor.evaluation');
+    Route::get('/evaluation/{internship}', [App\Http\Controllers\Mentor\EvaluationController::class, 'show'])
+        ->name('mentor.evaluation.show');
+    Route::post('/evaluation/{internship}', [App\Http\Controllers\Mentor\EvaluationController::class, 'store'])
+        ->name('mentor.evaluation.store');
+    Route::get('/evaluation/{internship}/certificate', [App\Http\Controllers\Mentor\EvaluationController::class, 'previewCertificate'])
+        ->name('mentor.evaluation.certificate');
 
     Route::get('/attendance', [App\Http\Controllers\Mentor\AttendanceMonitoringController::class, 'index'])
         ->name('mentor.attendance');
@@ -208,5 +214,21 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+Route::get('/debug/certificate/{internship}', function ($internshipId) {
+    $internship = \App\Models\Internship::with(['intern', 'job', 'evaluation.mentor', 'evaluation.intern'])->findOrFail($internshipId);
+    $evaluation = $internship->evaluation;
+
+    if (!$evaluation) {
+        return 'No evaluation found for this internship.';
+    }
+
+    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('certificates.internship', [
+        'evaluation' => $evaluation,
+        'internship' => $internship,
+    ])->setPaper('a4', 'landscape');
+
+    return $pdf->stream('debug-certificate.pdf');
+})->middleware(['auth'])->name('debug.certificate');
 
 require __DIR__ . '/auth.php';

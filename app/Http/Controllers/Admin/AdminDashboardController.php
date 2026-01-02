@@ -102,7 +102,7 @@ class AdminDashboardController extends Controller
 
   private function getEndingSoon()
   {
-    return Internship::with(['user:id,name,email', 'mentor:id,name'])
+    return Internship::with(['intern:id,name,email', 'mentor:id,name'])
       ->whereIn('status', ['active', 'extended'])
       ->whereBetween('end_date', [Carbon::today(), Carbon::today()->addDays(14)])
       ->orderBy('end_date')
@@ -110,8 +110,8 @@ class AdminDashboardController extends Controller
       ->get()
       ->map(fn($i) => [
         'id' => $i->id,
-        'intern_name' => $i->user?->name ?? 'Unknown',
-        'intern_email' => $i->user?->email,
+        'intern_name' => $i->intern?->name ?? 'Unknown',
+        'intern_email' => $i->intern?->email,
         'mentor_name' => $i->mentor?->name ?? 'No Mentor',
         'position' => $i->custom_position ?? $i->job?->title ?? '-',
         'end_date' => $i->end_date->format('d M Y'),

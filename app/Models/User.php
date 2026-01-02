@@ -146,7 +146,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->internshipsAsIntern()
             ->whereIn('status', ['active', 'extended'])
             ->whereDate('start_date', '<=', $today)
-            ->whereDate('end_date', '>', $today)
+            ->whereDate('end_date', '>=', $today)
             ->first();
     }
 
