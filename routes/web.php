@@ -140,9 +140,13 @@ Route::middleware(['auth', 'verified', 'active', 'role:mentor'])->prefix('mentor
     Route::post('/tasks/{task}/cancel', [App\Http\Controllers\Mentor\TaskController::class, 'cancel'])
         ->name('mentor.tasks.cancel');
 
-    Route::get('/logbook', function () {
-        return Inertia::render('Mentor/LogbookReview');
-    })->name('mentor.logbook');
+    // Logbook Review
+    Route::get('/logbook', [App\Http\Controllers\Mentor\LogbookController::class, 'index'])
+        ->name('mentor.logbook');
+    Route::post('/logbook/{logbook}/approve', [App\Http\Controllers\Mentor\LogbookController::class, 'approve'])
+        ->name('mentor.logbook.approve');
+    Route::post('/logbook/{logbook}/reject', [App\Http\Controllers\Mentor\LogbookController::class, 'reject'])
+        ->name('mentor.logbook.reject');
 
     Route::get('/evaluation', function () {
         return Inertia::render('Mentor/Evaluation');
