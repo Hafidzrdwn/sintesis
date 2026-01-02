@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Auth\GoogleController;
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
@@ -70,9 +69,7 @@ Route::post('/institutions', [App\Http\Controllers\InstitutionController::class,
 */
 
 Route::middleware(['auth', 'verified', 'active', 'role:intern'])->prefix('intern')->group(function () {
-    Route::get('/dashboard', function () {
-        return Inertia::render('InternDashboard');
-    })->name('intern.dashboard');
+    Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('intern.dashboard');
 
     Route::get('/attendance', [App\Http\Controllers\Intern\PresenceController::class, 'index'])
         ->name('intern.attendance');

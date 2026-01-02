@@ -4,6 +4,7 @@ import { Head, Link, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import AttendanceCard from '@/Components/AttendanceCard.vue';
 import { formatDate } from '@/utils/helpers';
+import BaseButton from '@/Components/BaseButton.vue';
 
 defineOptions({ layout: AuthenticatedLayout });
 
@@ -73,10 +74,10 @@ const getPriorityColor = (priority) => {
     const colors = {
         'urgent': 'text-red-600 bg-red-50 border-red-100',
         'high': 'text-orange-600 bg-orange-50 border-orange-100',
-        'medium': 'text-blue-600 bg-blue-50 border-blue-100',
-        'low': 'text-slate-500 bg-slate-50 border-slate-100',
+        'medium': 'text-amber-600 bg-amber-50 border-amber-100',
+        'low': 'text-blue-600 bg-blue-50 border-blue-100',
     };
-    return colors[priority] || colors.medium;
+    return colors[priority] || 'text-slate-500 bg-slate-50 border-slate-100';
 };
 </script>
 
@@ -110,24 +111,24 @@ const getPriorityColor = (priority) => {
                 <h3 class="text-lg font-bold text-text-main">Ringkasan Tugas</h3>
                 <div class="flex bg-slate-200 rounded-lg p-1">
                     <button @click="taskFilter = 'all'"
-                        class="px-4 py-1.5 rounded-md text-xs font-semibold transition-all"
+                        class="px-4 py-1.5 cursor-pointer rounded-md text-xs font-semibold transition-all"
                         :class="taskFilter === 'all' ? 'bg-white text-primary shadow-sm' : 'text-text-secondary hover:text-text-main hover:bg-white/50'">Semua</button>
                     <button @click="taskFilter = 'today'"
-                        class="px-4 py-1.5 rounded-md text-xs font-medium transition-all"
+                        class="px-4 py-1.5 cursor-pointer rounded-md text-xs font-medium transition-all"
                         :class="taskFilter === 'today' ? 'bg-white text-primary shadow-sm' : 'text-text-secondary hover:text-text-main hover:bg-white/50'">Tenggat
                         Hari Ini</button>
                     <button @click="taskFilter = 'overdue'"
-                        class="px-4 py-1.5 rounded-md text-xs font-medium transition-all"
+                        class="px-4 py-1.5 cursor-pointer rounded-md text-xs font-medium transition-all"
                         :class="taskFilter === 'overdue' ? 'bg-white text-primary shadow-sm' : 'text-text-secondary hover:text-text-main hover:bg-white/50'">Terlewat</button>
                 </div>
             </div>
 
             <div class="flex flex-col gap-3">
-                <div v-for="task in filteredTasks" :key="task.id"
-                    class="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-xl bg-white border border-slate-200 hover:border-primary/40 transition-colors shadow-sm"
+                <Link :href="route('intern.tasks', { search: task.title })" v-for="task in filteredTasks" :key="task.id"
+                    class="group cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-xl bg-white border border-slate-200 hover:border-primary/40 transition-colors shadow-sm"
                     :class="{ 'opacity-70': task.status === 'completed' }">
-                    <div class="flex items-start gap-4">
-                        <div class="mt-1 p-2 rounded-full border" :class="getPriorityColor(task.priority)">
+                    <div class="flex items-center gap-4">
+                        <div class="p-2 rounded-xl border flex items-center justify-center" :class="getPriorityColor(task.priority)">
                             <span class="material-symbols-outlined text-xl">{{ getPriorityIcon(task.priority) }}</span>
                         </div>
                         <div>
@@ -135,9 +136,8 @@ const getPriorityColor = (priority) => {
                                 :class="{ 'line-through decoration-slate-400': task.status === 'completed' }">
                                 {{ task.title }}
                             </h4>
-                            <p class="text-sm text-text-secondary mt-1">
-                                {{ task.description?.substring(0, 50) }}{{ task.description?.length > 50 ? '...' : '' }}
-                                <span v-if="task.due_date_human" class="ml-2">• Tenggat {{ task.due_date_human }}</span>
+                            <p v-if="task.due_date_human" class="text-sm text-text-secondary mt-1">
+                                Tenggat {{ task.due_date_human }}
                             </p>
                         </div>
                     </div>
@@ -152,7 +152,7 @@ const getPriorityColor = (priority) => {
                             {{ getTaskStatusStyle(task.status).label }}
                         </span>
                     </div>
-                </div>
+                </Link>
 
                 <div v-if="filteredTasks.length === 0"
                     class="p-8 text-center bg-white rounded-xl border border-slate-200">
@@ -163,10 +163,9 @@ const getPriorityColor = (priority) => {
                 </div>
             </div>
 
-            <Link :href="route('intern.tasks')"
-                class="text-primary hover:text-primary-hover text-sm font-semibold flex items-center justify-center gap-1 transition-colors py-2">
+            <BaseButton :href="route('intern.tasks')" variant="secondary" class="w-max self-end">
                 Lihat Semua Tugas <span class="material-symbols-outlined text-sm">arrow_forward</span>
-            </Link>
+            </BaseButton>
         </div>
 
         <div class="xl:col-span-1 flex flex-col gap-4">

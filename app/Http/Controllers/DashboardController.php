@@ -34,7 +34,7 @@ class DashboardController extends Controller
                     WHEN status = 'completed' THEN 4 
                     ELSE 5 END")
                 ->orderBy('due_date')
-                ->take(5)
+                ->take(4)
                 ->get()
                 ->map(fn($task) => [
                     'id' => $task->id,
@@ -43,7 +43,7 @@ class DashboardController extends Controller
                     'status' => $task->status,
                     'priority' => $task->priority,
                     'due_date' => $task->due_date?->format('Y-m-d'),
-                    'due_date_human' => $task->due_date?->translatedFormat('d M'),
+                    'due_date_human' => $task->due_date?->translatedFormat('d M Y'),
                     'is_overdue' => $task->isOverdue(),
                     'days_until_due' => $task->getDaysUntilDue(),
                 ]);
@@ -55,7 +55,7 @@ class DashboardController extends Controller
                 ->map(fn($log) => [
                     'id' => $log->id,
                     'date' => $log->date->format('Y-m-d'),
-                    'date_human' => $log->date->translatedFormat('l, d M'),
+                    'date_human' => $log->date->translatedFormat('l, d M Y'),
                     'activity' => $log->activity,
                     'description' => $log->description,
                     'status' => $log->status,
