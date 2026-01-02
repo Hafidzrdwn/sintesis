@@ -66,8 +66,6 @@ const variants = {
         'bg-slate-100 text-slate-700 hover:bg-slate-200 focus:ring-slate-300',
     outlineSecondary:
         'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 focus:ring-slate-300',
-    outline:
-        'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 focus:ring-slate-300',
     danger:
         'bg-danger text-white hover:bg-danger-hover shadow-lg shadow-danger/20 focus:ring-danger',
     outlineDanger:
