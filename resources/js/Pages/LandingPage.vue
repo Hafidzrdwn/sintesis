@@ -7,8 +7,9 @@ import JobCard from '@/Components/Landing/JobCard.vue';
 import ProcessStepCard from '@/Components/Landing/ProcessStepCard.vue';
 import TestimonialCard from '@/Components/Landing/TestimonialCard.vue';
 import StatItem from '@/Components/Landing/StatItem.vue';
-import { onMounted, onUnmounted, computed } from 'vue';
+import { onMounted, onUnmounted, computed, ref } from 'vue';
 import { formatRelativeTime } from '@/utils/helpers';
+import axios from 'axios';
 
 defineProps({
     jobs: {
@@ -53,7 +54,7 @@ const steps = [
     }
 ];
 
-const testimonials = [
+const defaultTestimonials = [
     {
         name: 'Andi Pratama',
         role: 'Ex-Data Analyst Intern',
@@ -77,9 +78,81 @@ const testimonials = [
     }
 ];
 
+const testimonials = ref([]);
+const currentSlide = ref(0);
+const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1024);
+let slideInterval = null;
+
+const displayedTestimonials = computed(() => {
+    return testimonials.value.length > 0 ? testimonials.value : defaultTestimonials;
+});
+
+const itemsPerView = computed(() => {
+    if (windowWidth.value >= 1024) return 3;
+    if (windowWidth.value >= 768) return 2;
+    return 1;
+});
+
+const totalSlides = computed(() => {
+    return Math.ceil(displayedTestimonials.value.length / itemsPerView.value);
+});
+
+const needsSlider = computed(() => {
+    return displayedTestimonials.value.length > itemsPerView.value;
+});
+
+const slideOffset = computed(() => {
+    return currentSlide.value * (100 / itemsPerView.value);
+});
+
+const nextSlide = () => {
+    if (!needsSlider.value) return;
+    currentSlide.value = (currentSlide.value + 1) % totalSlides.value;
+};
+
+const prevSlide = () => {
+    if (!needsSlider.value) return;
+    currentSlide.value = (currentSlide.value - 1 + totalSlides.value) % totalSlides.value;
+};
+
+const goToSlide = (index) => {
+    currentSlide.value = index;
+};
+
+const handleResize = () => {
+    windowWidth.value = window.innerWidth;
+    if (currentSlide.value >= totalSlides.value) {
+        currentSlide.value = 0;
+    }
+};
+
+const fetchTestimonials = async () => {
+    try {
+        const response = await axios.get('/api/testimonials');
+        testimonials.value = response.data.map(t => ({
+            name: t.user_name,
+            role: 'Ex-' + t.position,
+            quote: t.content,
+            initial: t.user_name?.charAt(0) || '?',
+            stars: t.rating,
+            avatar: t.user_avatar,
+        }));
+    } catch (error) {
+        console.log('Using default testimonials');
+    }
+};
+
 let observer = null;
 
 onMounted(() => {
+    fetchTestimonials();
+
+    window.addEventListener('resize', handleResize);
+
+    slideInterval = setInterval(() => {
+        if (needsSlider.value) nextSlide();
+    }, 5000);
+
     observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -95,6 +168,8 @@ onMounted(() => {
 
 onUnmounted(() => {
     if (observer) observer.disconnect();
+    if (slideInterval) clearInterval(slideInterval);
+    window.removeEventListener('resize', handleResize);
 });
 </script>
 
@@ -102,7 +177,6 @@ onUnmounted(() => {
 
     <Head title="Portal Magang Inosoft" />
 
-    <!-- Hero Section -->
     <section class="relative pt-10 pb-20 lg:pb-24 overflow-hidden bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
@@ -143,7 +217,8 @@ onUnmounted(() => {
                                 <span class="material-symbols-outlined">home_work</span>
                             </div>
                             <div>
-                                <p class="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">PT Inosoft Trans Sistem</p>
+                                <p class="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">PT Inosoft
+                                    Trans Sistem</p>
                                 <p class="text-slate-900 font-black text-xl">Founded in 2006</p>
                             </div>
                         </div>
@@ -153,7 +228,6 @@ onUnmounted(() => {
         </div>
     </section>
 
-    <!-- Stats Section -->
     <section class="py-12 bg-slate-50 border-y border-slate-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x divide-slate-200/50">
@@ -162,7 +236,6 @@ onUnmounted(() => {
         </div>
     </section>
 
-    <!-- Cara Kerja Section -->
     <section class="py-20 lg:py-28 bg-white" id="cara-kerja">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="reveal-on-scroll">
@@ -179,7 +252,6 @@ onUnmounted(() => {
         </div>
     </section>
 
-    <!-- Lowongan Section -->
     <section class="py-20 lg:py-28 bg-slate-50 border-t border-slate-200" id="lowongan">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col md:flex-row items-end justify-between gap-6 mb-12 reveal-on-scroll">
@@ -192,14 +264,8 @@ onUnmounted(() => {
             <div v-if="jobs.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <div v-for="(job, index) in jobs" :key="job.id" class="reveal-on-scroll"
                     :class="`stagger-${(index % 3) + 1}`">
-                    <JobCard 
-                        :title="job.title"
-                        :type="job.type"
-                        :description="job.description"
-                        :updatedAt="formatRelativeTime(job.updatedAt)"
-                        :image="job.image"
-                        :href="job.href"
-                    />
+                    <JobCard :title="job.title" :type="job.type" :description="job.description"
+                        :updatedAt="formatRelativeTime(job.updatedAt)" :image="job.image" :href="job.href" />
                 </div>
             </div>
 
@@ -219,10 +285,31 @@ onUnmounted(() => {
                     subtitle="Apa kata mereka tentang magang di Inosoft Trans Sistem." />
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
-                <div v-for="(testimonial, index) in testimonials" :key="testimonial.name" class="reveal-on-scroll"
-                    :class="`stagger-${index + 1}`">
-                    <TestimonialCard v-bind="testimonial" />
+            <div class="relative mt-12">
+                <button v-if="needsSlider" @click="prevSlide"
+                    class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-12 h-12 bg-white rounded-full shadow-lg border border-slate-200 items-center justify-center text-slate-600 hover:text-primary hover:border-primary transition-colors cursor-pointer hidden md:flex">
+                    <span class="material-symbols-outlined">chevron_left</span>
+                </button>
+                <button v-if="needsSlider" @click="nextSlide"
+                    class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-12 h-12 bg-white rounded-full shadow-lg border border-slate-200 items-center justify-center text-slate-600 hover:text-primary hover:border-primary transition-colors cursor-pointer hidden md:flex">
+                    <span class="material-symbols-outlined">chevron_right</span>
+                </button>
+
+                <div class="overflow-hidden">
+                    <div class="flex transition-transform duration-500 ease-out"
+                        :style="{ transform: `translateX(-${slideOffset}%)` }">
+                        <div v-for="(testimonial, index) in displayedTestimonials" :key="index"
+                            class="w-full shrink-0 px-2 md:w-1/2 lg:w-1/3">
+                            <TestimonialCard v-bind="testimonial" />
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="needsSlider" class="flex justify-center gap-2 mt-8">
+                    <button v-for="n in totalSlides" :key="n" @click="goToSlide(n - 1)"
+                        class="w-3 h-3 rounded-full transition-all duration-300 cursor-pointer"
+                        :class="currentSlide === n - 1 ? 'bg-primary w-8' : 'bg-slate-300 hover:bg-slate-400'">
+                    </button>
                 </div>
             </div>
         </div>

@@ -3,7 +3,6 @@
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\ProfileController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -14,6 +13,7 @@ use Inertia\Inertia;
 */
 
 Route::get('/', [JobController::class, 'landing']);
+Route::get('/api/testimonials', [App\Http\Controllers\TestimonialController::class, 'getApproved']);
 
 Route::get('/lowongan/{slug}', [JobController::class, 'show'])->name('job.detail');
 
@@ -61,6 +61,10 @@ Route::post('/internship/apply', [App\Http\Controllers\ApplicantController::clas
 
 Route::post('/institutions', [App\Http\Controllers\InstitutionController::class, 'store'])
     ->middleware(['auth', 'verified'])->name('institutions.store');
+
+// Testimonial (for completed interns, accessible from CandidateDashboard)
+Route::post('/testimonial', [App\Http\Controllers\TestimonialController::class, 'store'])
+    ->middleware(['auth', 'verified'])->name('testimonial.store');
 
 /*
 |--------------------------------------------------------------------------

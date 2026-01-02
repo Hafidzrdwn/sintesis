@@ -4,6 +4,8 @@ import LandingLayout from '@/Layouts/LandingLayout.vue';
 import { Head, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { formatDate, formatDateTime } from '@/utils/helpers';
+import { ref } from 'vue';
+import axios from 'axios';
 
 const props = defineProps({
     applicationStatus: {
@@ -20,12 +22,9 @@ const props = defineProps({
     },
 });
 
-console.log(props.internship)
-
 const page = usePage();
 const user = computed(() => page.props.auth.user);
 
-// Status display config
 const statusConfig = {
     pending: {
         label: 'Sedang Ditinjau',
@@ -83,6 +82,35 @@ const internshipStatus = computed(() => {
     if (!props.internship) return null;
     return internshipStatusConfig[props.internship.status] || null;
 });
+
+const showTestimonialForm = ref(false);
+const testimonialSubmitted = ref(false);
+const testimonialLoading = ref(false);
+const testimonialError = ref('');
+const testimonialForm = ref({
+    content: '',
+    rating: 5,
+});
+
+const submitTestimonial = async () => {
+    if (!testimonialForm.value.content.trim() || testimonialForm.value.content.length < 20) {
+        testimonialError.value = 'Testimoni minimal 20 karakter';
+        return;
+    }
+
+    testimonialLoading.value = true;
+    testimonialError.value = '';
+
+    try {
+        await axios.post(route('testimonial.store'), testimonialForm.value);
+        testimonialSubmitted.value = true;
+        showTestimonialForm.value = false;
+    } catch (error) {
+        testimonialError.value = error.response?.data?.message || 'Gagal mengirim testimoni';
+    } finally {
+        testimonialLoading.value = false;
+    }
+};
 
 defineOptions({
     layout: LandingLayout,
@@ -163,7 +191,7 @@ defineOptions({
         <!-- Completed Internship (Alumni) State -->
         <section v-if="internship?.status === 'completed'"
             class="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 p-8 mb-6">
-            <div class="flex items-start gap-4">
+            <div class="flex md:flex-row flex-col items-start gap-4">
                 <div class="p-3 bg-emerald-100 rounded-xl flex items-center justify-center">
                     <span class="material-symbols-outlined text-emerald-600 scale-110">school</span>
                 </div>
@@ -186,6 +214,10 @@ defineOptions({
                                 <p class="font-semibold text-gray-900">{{ formatDate(internship?.start_date) }} - {{
                                     formatDate(internship?.end_date) }}</p>
                             </div>
+                            <div>
+                                <p class="text-gray-500 text-xs uppercase font-bold mb-1">Nilai Akhir Magang</p>
+                                <p class="font-semibold text-gray-900">{{ internship?.overall_rating }}</p>
+                            </div>
                         </div>
                     </div>
 
@@ -195,28 +227,90 @@ defineOptions({
                         <p class="text-sm text-emerald-800 font-medium">{{ internship.notes }}</p>
                     </div>
 
-                    <div v-if="internship?.mentor_recommendation"
-                        class="bg-emerald-100/50 rounded-lg p-4 border border-emerald-200 mb-4">
-                        <p class="text-xs uppercase font-bold text-emerald-700 mb-1">Rekomendasi dari Mentor</p>
-                        <div class="text-sm text-emerald-800 font-medium rich-content" v-html="internship.mentor_recommendation"></div>
+                    <div class="flex items-center justify-center mb-4 gap-4"
+                        v-if="internship?.mentor_recommendation || internship?.mentor_final_notes">
+                        <div v-if="internship?.mentor_recommendation"
+                            class="bg-emerald-100/50 flex-1 rounded-lg p-4 border border-emerald-200">
+                            <p class="text-xs uppercase font-bold text-emerald-700 mb-1">Rekomendasi dari Mentor</p>
+                            <div class="text-sm text-emerald-800 font-medium rich-content"
+                                v-html="internship.mentor_recommendation"></div>
+                        </div>
+
+                        <div v-if="internship?.mentor_final_notes"
+                            class="bg-emerald-100/50 flex-1 rounded-lg p-4 border border-emerald-200">
+                            <p class="text-xs uppercase font-bold text-emerald-700 mb-1">Catatan dari Mentor</p>
+                            <div class="text-sm text-emerald-800 font-medium rich-content"
+                                v-html="internship.mentor_final_notes"></div>
+                        </div>
                     </div>
 
-                    <div v-if="internship?.mentor_final_notes"
-                        class="bg-emerald-100/50 rounded-lg p-4 border border-emerald-200 mb-4">
-                        <p class="text-xs uppercase font-bold text-emerald-700 mb-1">Catatan dari Mentor</p>
-                        <div class="text-sm text-emerald-800 font-medium rich-content" v-html="internship.mentor_final_notes"></div>
-                    </div>
-
-                    <div class="flex flex-wrap gap-3">
-                        <BaseButton v-if="internship?.certificate_url" :href="internship.certificate_url" external
-                            target="_blank" variant="primary">
+                    <div class="flex flex-wrap gap-4 mt-6">
+                        <BaseButton size="lg" v-if="internship?.certificate_url" :href="internship.certificate_url"
+                            external target="_blank" variant="primary">
                             <span class="material-symbols-outlined">download</span>
                             Download Sertifikat
                         </BaseButton>
-                        <BaseButton href="/#lowongan" variant="outlinePrimary">
-                            <span class="material-symbols-outlined">work</span>
-                            Lihat Lowongan Magang Baru
-                        </BaseButton>
+                        <button v-if="!showTestimonialForm && !testimonialSubmitted" @click="showTestimonialForm = true"
+                            class="flex items-center justify-center gap-2 h-14 px-8 text-base bg-white/80 hover:bg-white rounded-lg border-2 border-dashed border-emerald-300 hover:border-emerald-400 transition-colors cursor-pointer">
+                            <span class="material-symbols-outlined text-emerald-600 scale-90">rate_review</span>
+                            <span class="font-semibold text-emerald-600">Bagikan Pengalaman Magang Anda</span>
+                        </button>
+                    </div>
+
+                    <!-- Testimonial Section -->
+                    <div class="mt-6 pt-6 border-t border-emerald-200">
+                        <div v-if="testimonialSubmitted" class="bg-emerald-100 rounded-lg p-4 text-center">
+                            <span class="material-symbols-outlined text-emerald-600 text-3xl mb-2">check_circle</span>
+                            <p class="text-emerald-800 font-semibold">Terima kasih atas testimoni Anda!</p>
+                            <p class="text-emerald-600 text-sm">Testimoni Anda akan ditampilkan di halaman utama.</p>
+                        </div>
+
+                        <div v-else>
+                            <div v-if="showTestimonialForm"
+                                class="bg-white rounded-lg p-5 border border-emerald-200 shadow-sm">
+                                <h4 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-emerald-600">rate_review</span>
+                                    Bagikan Pengalaman Anda
+                                </h4>
+
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Rating
+                                        Pengalaman</label>
+                                    <div class="flex items-center gap-1">
+                                        <button v-for="star in 5" :key="star" @click="testimonialForm.rating = star"
+                                            class="p-1 transition-transform hover:scale-110 cursor-pointer">
+                                            <span class="material-symbols-outlined text-2xl"
+                                                :class="star <= testimonialForm.rating ? 'text-amber-400 fill' : 'text-gray-300'">
+                                                {{ star <= testimonialForm.rating ? 'star' : 'star_outline' }} </span>
+                                        </button>
+                                        <span class="ml-2 text-sm text-gray-600">{{ testimonialForm.rating }}/5</span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Ceritakan Pengalaman
+                                        Anda</label>
+                                    <textarea v-model="testimonialForm.content" rows="4"
+                                        class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 resize-none"
+                                        placeholder="Bagikan pengalaman magang Anda di Inosoft... (min. 20 karakter)"></textarea>
+                                    <p class="text-xs text-gray-500 mt-1">{{ testimonialForm.content.length }}/500
+                                        karakter</p>
+                                </div>
+
+                                <p v-if="testimonialError" class="text-red-600 text-sm mb-4">{{ testimonialError }}</p>
+
+                                <div class="flex items-center justify-end gap-3">
+                                    <button @click="showTestimonialForm = false"
+                                        class="px-4 py-2 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition-colors cursor-pointer">
+                                        Batal
+                                    </button>
+                                    <button @click="submitTestimonial" :disabled="testimonialLoading"
+                                        class="px-4 py-2 bg-emerald-500 text-white font-semibold rounded-lg hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer">
+                                        {{ testimonialLoading ? 'Mengirim...' : 'Kirim Testimoni' }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -291,7 +385,8 @@ defineOptions({
                                 <div>
                                     <p class="text-gray-500 text-xs uppercase font-bold tracking-wider mb-1">Tanggal
                                         Magang</p>
-                                    <p class="font-semibold text-gray-900">{{ formatDate(application?.start_date) + ' - ' + formatDate(application?.end_date) }}</p>
+                                    <p class="font-semibold text-gray-900">{{ `${formatDate(application?.start_date)} -
+                                        ${formatDate(application?.end_date)}` }}</p>
                                 </div>
                                 <div>
                                     <p class="text-gray-500 text-xs uppercase font-bold tracking-wider mb-1">Asal
@@ -434,7 +529,7 @@ defineOptions({
                             <span>Peluang Baru</span>
                         </div>
                         <h3 class="text-lg font-bold text-gray-900 mb-2">
-                            {{ applicationStatus === 'none' ? 'Mulai Karir Anda!' : 'Masih mencari posisi yang lebih cocok ? ' }}
+                            {{ applicationStatus === 'none' ? 'Mulai Karir Anda!' : 'Masih mencari posisi yang lebih cocok? ' }}
                         </h3>
                         <p class="text-sm text-gray-600 mb-5 leading-relaxed font-body">
                             Jangan lewatkan kesempatan emas lainnya. Kami membuka lowongan baru setiap minggunya di
