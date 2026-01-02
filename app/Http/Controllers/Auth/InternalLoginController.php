@@ -30,44 +30,37 @@ class InternalLoginController extends Controller
         $identity = $request->input('identity');
         $password = $request->input('password');
 
-        // Find user by email or username
         $user = User::where('email', $identity)
             ->orWhere('username', $identity)
             ->first();
 
-        // Validate user exists
         if (!$user) {
             throw ValidationException::withMessages([
                 'identity' => 'Username atau email tidak ditemukan.',
             ]);
         }
 
-        // Check if user is internal staff (admin or mentor)
         if (!in_array($user->role, ['admin', 'mentor'])) {
             throw ValidationException::withMessages([
                 'identity' => 'Akun ini tidak memiliki akses ke portal internal.',
             ]);
         }
 
-        // Check user status
         if ($user->status !== 'active') {
             throw ValidationException::withMessages([
                 'identity' => 'Akun Anda tidak aktif. Hubungi administrator.',
             ]);
         }
 
-        // Validate password
         if (!Hash::check($password, $user->password)) {
             throw ValidationException::withMessages([
                 'password' => 'Password salah.',
             ]);
         }
 
-        // Login the user
         Auth::login($user, $request->boolean('remember'));
         $request->session()->regenerate();
 
-        // Redirect based on role
         return redirect()->intended($this->getRedirectUrl($user));
     }
 
