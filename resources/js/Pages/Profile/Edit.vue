@@ -14,7 +14,7 @@ defineOptions({
         const status = page.props.applicationStatus;
         const user = page.props.auth?.user;
         const isInternalStaff = ['admin', 'mentor'].includes(user?.role);
-        const useAuth = (status === 'accepted' || page.props.hasActiveInternship) || isInternalStaff;
+        const useAuth = (page.props.hasActiveInternship && page.props.onGoingInternship) || isInternalStaff;
         const Layout = useAuth ? AuthenticatedLayout : LandingLayout;
         return h(Layout, () => page);
     }
@@ -24,7 +24,8 @@ const props = defineProps({
     mustVerifyEmail: Boolean,
     status: String,
     applicationStatus: String,
-    hasActiveInternship: Boolean
+    hasActiveInternship: Boolean,
+    onGoingInternship: Boolean
 });
 
 const form = useForm({
@@ -105,7 +106,7 @@ const getUserAvatar = (user) => {
 };
 
 const isInternal = computed(() => {
-    return (props.applicationStatus === 'accepted' || props.hasActiveInternship) || ['admin', 'mentor'].includes(user.value?.role);
+    return (props.hasActiveInternship && props.onGoingInternship) || ['admin', 'mentor'].includes(user.value?.role);
 });
 </script>
 

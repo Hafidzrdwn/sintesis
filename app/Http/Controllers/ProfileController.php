@@ -26,6 +26,7 @@ class ProfileController extends Controller
             'status' => session('status'),
             'applicationStatus' => $user->getApplicationStatus(),
             'hasActiveInternship' => $user->hasActiveInternship(),
+            'onGoingInternship' => $user->onGoingInternship()
         ]);
     }
 
