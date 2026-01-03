@@ -23,7 +23,7 @@ class InternshipController extends Controller
             $search = $request->search;
             $query->whereHas('intern', function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -79,14 +79,14 @@ class InternshipController extends Controller
     {
         $validated = $request->validate([
             'status' => ['required', Rule::in(['completed', 'extended', 'terminated'])],
-            'end_date' => ['nullable', 'required_if:status,extended', 'date', 'after:today'],
+            'end_date' => ['nullable', 'required_if:status,extended', 'date', 'after:' . $internship->end_date->toDateString()],
             'notes' => ['nullable', 'string', 'max:1000'],
         ], [
             'status.required' => 'Status wajib dipilih.',
             'status.in' => 'Status tidak valid.',
             'end_date.required_if' => 'Tanggal selesai baru wajib diisi untuk perpanjangan.',
             'end_date.date' => 'Format tanggal tidak valid.',
-            'end_date.after' => 'Tanggal selesai harus setelah hari ini.',
+            'end_date.after' => 'Tanggal perpanjangan harus setelah tanggal selesai saat ini (' . $internship->end_date->format('d M Y') . ').',
             'notes.max' => 'Catatan maksimal 1000 karakter.',
         ]);
 

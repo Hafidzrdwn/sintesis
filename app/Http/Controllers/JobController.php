@@ -109,8 +109,7 @@ class JobController extends Controller
         $user = request()->user();
 
         if (!$user->canApply()) {
-            return redirect()->route('dashboard')
-                ->with('error', 'Anda sudah memiliki lamaran yang sedang diproses. Silakan tunggu pengumuman terlebih dahulu.');
+            return redirect()->route('dashboard');
         }
 
         $openJobs = Job::open()

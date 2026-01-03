@@ -1,8 +1,9 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, router } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { Head, router, usePage } from '@inertiajs/vue3';
+import { ref, watch, computed } from 'vue';
 import BaseButton from '@/Components/BaseButton.vue';
+import Toast from '@/Components/Toast.vue';
 import { getInitials, getAvatarUrl, formatDate } from '@/utils/helpers';
 import {
   Search,
@@ -48,6 +49,9 @@ const actionForm = ref({
   notes: '',
   mentor_id: '',
 });
+
+const page = usePage();
+const errors = computed(() => page.props.errors || {});
 
 let searchTimeout = null;
 watch(searchQuery, (value) => {
@@ -154,6 +158,7 @@ const actionLabels = {
 </script>
 
 <template>
+  <Toast />
 
   <Head title="Data Peserta Magang" />
 
@@ -304,13 +309,13 @@ const actionLabels = {
               </td>
               <td class="px-6 py-4 text-center">
                 <span class="px-3 py-1 rounded-full text-xs font-bold border"
-                :class="getStatusConfig(internship.status).color">
-                {{ getStatusConfig(internship.status).label }}
-              </span>
-            </td>
-            <td class="px-6 py-4 text-slate-600 text-sm">
-              {{ internship.notes || '-' }}
-            </td>
+                  :class="getStatusConfig(internship.status).color">
+                  {{ getStatusConfig(internship.status).label }}
+                </span>
+              </td>
+              <td class="px-6 py-4 text-slate-600 text-sm">
+                {{ internship.notes || '-' }}
+              </td>
               <td class="px-6 py-4">
                 <div class="flex items-center justify-start gap-1">
                   <button @click="openDetail(internship)"
@@ -492,7 +497,9 @@ const actionLabels = {
                 Tanggal Selesai Baru <span class="text-danger">*</span>
               </label>
               <input v-model="actionForm.end_date" type="date"
-                class="w-full h-12 px-4 rounded-lg border border-slate-300 bg-slate-50 focus:border-primary focus:ring-primary focus:ring-2" />
+                class="w-full h-12 px-4 rounded-lg border bg-slate-50 focus:ring-2"
+                :class="errors.end_date ? 'border-danger focus:border-danger focus:ring-danger/20' : 'border-slate-300 focus:border-primary focus:ring-primary'" />
+              <p v-if="errors.end_date" class="text-sm text-danger mt-1">{{ errors.end_date }}</p>
             </div>
 
             <!-- Terminate: Reason -->

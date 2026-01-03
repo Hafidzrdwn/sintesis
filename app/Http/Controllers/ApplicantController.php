@@ -18,8 +18,7 @@ class ApplicantController extends Controller
         $user = $request->user();
         
         if (!$user->canApply()) {
-            return redirect()->route('dashboard')
-                ->with('error', 'Anda sudah memiliki lamaran yang sedang diproses.');
+            return redirect()->route('dashboard');
         }
 
         $validated = $request->validated();
@@ -79,7 +78,6 @@ class ApplicantController extends Controller
             'status' => 'pending',
         ]);
         
-        return redirect()->route('dashboard')
-            ->with('success', 'Lamaran Anda berhasil dikirim! Kami akan menghubungi Anda melalui email.');
+        return redirect()->route('dashboard');
     }
 }
