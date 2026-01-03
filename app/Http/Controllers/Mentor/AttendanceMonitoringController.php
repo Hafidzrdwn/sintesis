@@ -29,7 +29,6 @@ class AttendanceMonitoringController extends Controller
       ->when($search, fn($q) => $q->where('name', 'like', "%{$search}%"))
       ->get(['id', 'name', 'email', 'avatar']);
 
-    // Get attendance data for the month
     $startDate = Carbon::create($year, $month, 1)->startOfMonth();
     $endDate = Carbon::create($year, $month, 1)->endOfMonth();
 
@@ -66,6 +65,8 @@ class AttendanceMonitoringController extends Controller
         ->whereBetween('date', [$startDate, $endDate])
         ->get();
 
+      $workDays = $this->countWorkDays($startDate, Carbon::now()->min($endDate));
+
       $menteeStats[$mentee->id] = [
         'id' => $mentee->id,
         'name' => $mentee->name,
@@ -74,7 +75,7 @@ class AttendanceMonitoringController extends Controller
         'present' => $userPresences->whereIn('status', ['present', 'late'])->count(),
         'late' => $userPresences->where('status', 'late')->count(),
         'leave' => $userPresences->whereIn('status', ['leave', 'sick', 'permit'])->count(),
-        'absent' => $this->countWorkDays($startDate, Carbon::now()->min($endDate)) - $userPresences->count(),
+        'absent' => max(0, $workDays - $userPresences->count()),
         'total_hours' => round($userPresences->sum(fn($p) => $p->getWorkingHours()), 1),
       ];
     }
