@@ -31,6 +31,7 @@ const menus = {
         { label: 'Data Peserta Magang', routeName: 'admin.internships', icon: 'badge', urlPrefix: '/admin/internships' },
         { label: 'Monitoring Absensi', routeName: 'admin.attendance', icon: 'event_available', urlPrefix: '/admin/attendance' },
         { label: 'Lowongan', routeName: 'admin.jobs', icon: 'work', urlPrefix: '/admin/jobs' },
+        { label: 'Testimonial', routeName: 'admin.testimonials', icon: 'format_quote', urlPrefix: '/admin/testimonials' },
         { label: 'Audit Log', routeName: 'admin.audit', icon: 'security', urlPrefix: '/admin/audit' },
     ],
     mentor: [
@@ -96,7 +97,7 @@ const isSettingsActive = computed(() => page.url === '/profile');
                                 </div>
                                 <div class="flex flex-col">
                                     <h1 class="text-text-main text-sm font-bold leading-tight line-clamp-1">{{ user.name
-                                    }}</h1>
+                                        }}</h1>
                                     <p class="text-text-secondary text-[10px] font-medium uppercase tracking-wide">{{
                                         roleLabel }}</p>
                                 </div>

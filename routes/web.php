@@ -201,6 +201,12 @@ Route::middleware(['auth', 'verified', 'active', 'role:admin'])->prefix('admin')
     // Audit Log routes
     Route::get('/audit', [App\Http\Controllers\Admin\AuditLogController::class, 'index'])->name('admin.audit');
 
+    // Testimonial Management routes
+    Route::get('/testimonials', [App\Http\Controllers\Admin\TestimonialController::class, 'index'])->name('admin.testimonials');
+    Route::post('/testimonials/{testimonial}/approve', [App\Http\Controllers\Admin\TestimonialController::class, 'approve'])->name('admin.testimonials.approve');
+    Route::post('/testimonials/{testimonial}/reject', [App\Http\Controllers\Admin\TestimonialController::class, 'reject'])->name('admin.testimonials.reject');
+    Route::delete('/testimonials/{testimonial}', [App\Http\Controllers\Admin\TestimonialController::class, 'destroy'])->name('admin.testimonials.destroy');
+
     // Attendance Monitoring
     Route::get('/attendance', [App\Http\Controllers\Admin\AttendanceMonitoringController::class, 'index'])
         ->name('admin.attendance');
