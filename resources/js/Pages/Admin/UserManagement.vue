@@ -3,6 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 import BaseButton from '@/Components/BaseButton.vue';
+import Toast from '@/Components/Toast.vue';
 import { getInitials, getAvatarUrl, formatDateTime } from '@/utils/helpers';
 import {
     Search,
@@ -263,6 +264,7 @@ const getStatusConfig = (status) => {
 </script>
 
 <template>
+    <Toast />
 
     <Head title="Manajemen User" />
 
@@ -575,7 +577,7 @@ const getStatusConfig = (status) => {
                                 class="w-full h-12 px-4 text-base rounded-lg border border-slate-300 bg-slate-50 focus:border-primary focus:ring-primary focus:ring-2"
                                 placeholder="Masukkan nama lengkap" />
                             <p v-if="createForm.errors.name" class="mt-1 text-xs text-danger">{{ createForm.errors.name
-                                }}</p>
+                            }}</p>
                         </div>
 
                         <div>
@@ -690,7 +692,7 @@ const getStatusConfig = (status) => {
                                     class="w-full h-12 px-4 text-base rounded-lg border border-slate-300 bg-slate-50 focus:border-primary focus:ring-primary focus:ring-2">
                                     <option value="" disabled>Pilih Mentor</option>
                                     <option v-for="mentor in mentors" :key="mentor.id" :value="mentor.id">{{ mentor.name
-                                        }}</option>
+                                    }}</option>
                                 </select>
                                 <p v-if="createForm.errors.mentor_id" class="mt-1 text-xs text-danger">{{
                                     createForm.errors.mentor_id }}</p>
@@ -812,7 +814,7 @@ const getStatusConfig = (status) => {
                                         role.label }}</option>
                                 </select>
                                 <p v-if="editForm.errors.role" class="mt-1 text-xs text-danger">{{ editForm.errors.role
-                                    }}</p>
+                                }}</p>
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1.5">Status <span
@@ -868,7 +870,7 @@ const getStatusConfig = (status) => {
                                     class="w-full h-12 px-4 text-base rounded-lg border border-slate-300 bg-slate-50 focus:border-primary focus:ring-primary focus:ring-2">
                                     <option value="" disabled>Pilih Mentor</option>
                                     <option v-for="mentor in mentors" :key="mentor.id" :value="mentor.id">{{ mentor.name
-                                        }}</option>
+                                    }}</option>
                                 </select>
                                 <p v-if="editForm.errors.mentor_id" class="mt-1 text-xs text-danger">{{
                                     editForm.errors.mentor_id }}</p>
@@ -924,7 +926,7 @@ const getStatusConfig = (status) => {
                     <div class="p-6 flex flex-col gap-4">
                         <p class="text-slate-600">
                             Apakah Anda yakin ingin menghapus user <strong class="text-slate-900">{{ selectedUser.name
-                                }}</strong>?
+                            }}</strong>?
                         </p>
                         <p class="text-sm text-slate-500">
                             Tindakan ini akan menonaktifkan akun user dan dapat dibatalkan oleh administrator.

@@ -3,6 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { ref, watch, computed } from 'vue';
 import BaseButton from '@/Components/BaseButton.vue';
+import Toast from '@/Components/Toast.vue';
 import { formatDate } from '@/utils/helpers';
 import {
   Search,
@@ -200,8 +201,8 @@ const submitEdit = () => {
     .post(route('admin.jobs.update', selectedJob.value.id), {
       preserveScroll: true,
       forceFormData: true,
-    onSuccess: () => closeEdit(),
-  });
+      onSuccess: () => closeEdit(),
+    });
 };
 
 const submitDelete = () => {
@@ -293,6 +294,7 @@ const handleEditImageChange = (event) => {
 </script>
 
 <template>
+  <Toast />
 
   <Head title="Kelola Lowongan" />
 

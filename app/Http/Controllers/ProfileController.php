@@ -20,7 +20,7 @@ class ProfileController extends Controller
     public function edit(Request $request): Response
     {
         $user = $request->user();
-        
+
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => session('status'),
@@ -36,7 +36,7 @@ class ProfileController extends Controller
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $user = $request->user();
-        
+
         $user->fill([
             'name' => $request->name,
             'username' => $request->username,
@@ -47,14 +47,14 @@ class ProfileController extends Controller
             if ($user->avatar && !str_starts_with($user->avatar, 'https://')) {
                 Storage::disk('public')->delete($user->avatar);
             }
-            
+
             $path = $request->file('avatar')->store('avatars', 'public');
             $user->avatar = '/storage/' . $path;
         }
 
         $user->save();
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        return Redirect::route('profile.edit')->with('success', 'Profil berhasil diperbarui!');
     }
 
     /**
@@ -64,6 +64,9 @@ class ProfileController extends Controller
     {
         $request->validate([
             'password' => ['required', 'current_password'],
+        ], [
+            'password.required' => 'Password wajib diisi.',
+            'password.current_password' => 'Password tidak sesuai.',
         ]);
 
         $user = $request->user();

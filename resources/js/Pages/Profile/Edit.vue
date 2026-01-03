@@ -1,15 +1,16 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { Head, useForm, usePage, Link, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import LandingLayout from '@/Layouts/LandingLayout.vue';
 import BaseButton from '@/Components/BaseButton.vue';
+import Toast from '@/Components/Toast.vue';
 import { getInitials, getAvatarUrl } from '@/utils/helpers';
 
 const page = usePage();
 const user = computed(() => page.props.auth.user);
 
-defineOptions({ 
+defineOptions({
     layout: (h, page) => {
         const status = page.props.applicationStatus;
         const user = page.props.auth?.user;
@@ -44,6 +45,23 @@ const passwordForm = useForm({
 const activeTab = ref('profile');
 const showDeleteModal = ref(false);
 const avatarPreview = ref(null);
+const toastRef = ref(null);
+
+// Initialize tab from URL on mount
+onMounted(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab');
+    if (tabParam && ['profile', 'security'].includes(tabParam)) {
+        activeTab.value = tabParam;
+    }
+});
+
+// Update URL when tab changes
+watch(activeTab, (newTab) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('tab', newTab);
+    window.history.replaceState({}, '', url);
+});
 
 const deleteForm = useForm({
     password: '',
@@ -101,7 +119,7 @@ const deleteAccount = () => {
 };
 
 const getUserAvatar = (user) => {
-    if(avatarPreview.value) return avatarPreview.value
+    if (avatarPreview.value) return avatarPreview.value
     return user?.avatar ? getAvatarUrl(user) : null;
 };
 
@@ -111,6 +129,7 @@ const isInternal = computed(() => {
 </script>
 
 <template>
+    <Toast ref="toastRef" />
 
     <Head title="Edit Profil" />
 
@@ -118,9 +137,7 @@ const isInternal = computed(() => {
         <!-- Header -->
         <div>
             <div class="flex items-center gap-3 mb-1">
-                <Link v-if="!isInternal" 
-                    href="/dashboard"
-                    class="text-slate-400 hover:text-primary transition-colors">
+                <Link v-if="!isInternal" href="/dashboard" class="text-slate-400 hover:text-primary transition-colors">
                     <span class="material-symbols-outlined">arrow_back</span>
                 </Link>
                 <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Pengaturan</h1>
@@ -131,9 +148,8 @@ const isInternal = computed(() => {
         <!-- Tabs -->
         <div class="flex gap-1 bg-slate-100 p-1 rounded-xl w-fit">
             <button @click="activeTab = 'profile'"
-                class="px-5 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer"
-                :class="activeTab === 'profile' 
-                    ? 'bg-white text-primary shadow-sm' 
+                class="px-5 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer" :class="activeTab === 'profile'
+                    ? 'bg-white text-primary shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'">
                 <span class="flex items-center gap-2">
                     <span class="material-symbols-outlined text-lg">person</span>
@@ -141,9 +157,8 @@ const isInternal = computed(() => {
                 </span>
             </button>
             <button @click="activeTab = 'security'"
-                class="px-5 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer"
-                :class="activeTab === 'security' 
-                    ? 'bg-white text-primary shadow-sm' 
+                class="px-5 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer" :class="activeTab === 'security'
+                    ? 'bg-white text-primary shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'">
                 <span class="flex items-center gap-2">
                     <span class="material-symbols-outlined text-lg">lock</span>
@@ -172,7 +187,8 @@ const isInternal = computed(() => {
                                     class="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center text-primary text-3xl font-bold border-4 border-white shadow-lg">
                                     {{ getInitials(user.name) }}
                                 </div>
-                                <div class="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <div
+                                    class="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                     <span class="material-symbols-outlined text-white text-2xl">photo_camera</span>
                                 </div>
                             </div>
@@ -183,7 +199,8 @@ const isInternal = computed(() => {
                                 </BaseButton>
                                 <p class="text-xs text-slate-500 mt-2">JPG, PNG, GIF. Maks 2MB.</p>
                             </div>
-                            <input id="avatar-input" type="file" accept="image/*" class="hidden" @change="handleAvatarChange" />
+                            <input id="avatar-input" type="file" accept="image/*" class="hidden"
+                                @change="handleAvatarChange" />
                         </div>
                         <p v-if="form.errors.avatar" class="text-red-500 text-sm mt-2">{{ form.errors.avatar }}</p>
                     </div>
@@ -203,7 +220,8 @@ const isInternal = computed(() => {
                             Username
                         </label>
                         <div class="relative">
-                            <span class="material-symbols-outlined absolute left-3 top-3 text-slate-400 text-[20px]">alternate_email</span>
+                            <span
+                                class="material-symbols-outlined absolute left-3 top-3 text-slate-400 text-[20px]">alternate_email</span>
                             <input v-model="form.username" type="text"
                                 class="w-full h-12 pl-10 pr-4 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                                 placeholder="username123" />
@@ -217,7 +235,8 @@ const isInternal = computed(() => {
                             <span class="text-slate-400 font-normal">(Tidak dapat diubah)</span>
                         </label>
                         <div class="relative">
-                            <span class="material-symbols-outlined absolute left-3 top-3 text-slate-400 text-[20px]">mail</span>
+                            <span
+                                class="material-symbols-outlined absolute left-3 top-3 text-slate-400 text-[20px]">mail</span>
                             <input :value="user.email" type="email" disabled
                                 class="w-full h-12 pl-10 pr-4 bg-slate-100 border border-slate-200 rounded-lg text-slate-500 cursor-not-allowed" />
                         </div>
@@ -227,7 +246,8 @@ const isInternal = computed(() => {
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-2">Nomor Telepon</label>
                         <div class="relative">
-                            <span class="material-symbols-outlined absolute left-3 top-3 text-slate-400 text-[20px]">call</span>
+                            <span
+                                class="material-symbols-outlined absolute left-3 top-3 text-slate-400 text-[20px]">call</span>
                             <input v-model="form.phone" type="tel"
                                 class="w-full h-12 pl-10 pr-4 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                                 placeholder="08123456789" />
@@ -246,15 +266,6 @@ const isInternal = computed(() => {
                                     Silakan cek inbox email Anda dan klik link verifikasi.
                                 </p>
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Success Message -->
-                    <div v-if="status === 'profile-updated'"
-                        class="bg-green-50 border border-green-200 rounded-lg p-4">
-                        <div class="flex items-center gap-2 text-green-700">
-                            <span class="material-symbols-outlined">check_circle</span>
-                            <span class="font-medium">Profil berhasil diperbarui!</span>
                         </div>
                     </div>
 
@@ -305,15 +316,6 @@ const isInternal = computed(() => {
                         </p>
                     </div>
 
-                    <!-- Success Message -->
-                    <div v-if="passwordForm.recentlySuccessful"
-                        class="bg-green-50 border border-green-200 rounded-lg p-4">
-                        <div class="flex items-center gap-2 text-green-700">
-                            <span class="material-symbols-outlined">check_circle</span>
-                            <span class="font-medium">Password berhasil diubah!</span>
-                        </div>
-                    </div>
-
                     <div class="flex justify-end pt-4">
                         <BaseButton type="submit" :disabled="passwordForm.processing">
                             <span class="material-symbols-outlined" v-if="!passwordForm.processing">lock_reset</span>
@@ -353,8 +355,7 @@ const isInternal = computed(() => {
             <div class="absolute inset-0 bg-black/50" @click="showDeleteModal = false"></div>
             <div class="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
                 <div class="text-center mb-6">
-                    <div
-                        class="w-16 h-16 mx-auto bg-red-100 rounded-full flex items-center justify-center mb-4">
+                    <div class="w-16 h-16 mx-auto bg-red-100 rounded-full flex items-center justify-center mb-4">
                         <span class="material-symbols-outlined text-red-600 text-3xl">warning</span>
                     </div>
                     <h3 class="text-xl font-bold text-slate-900">Hapus Akun?</h3>

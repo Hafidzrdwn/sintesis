@@ -3,6 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 import BaseButton from '@/Components/BaseButton.vue';
+import Toast from '@/Components/Toast.vue';
 import { getInitials, formatDate, getDocumentUrl, getAvatarUrl } from '@/utils/helpers';
 import {
     Search,
@@ -191,6 +192,7 @@ const getStatusConfig = (status) => {
 </script>
 
 <template>
+    <Toast />
 
     <Head title="Rekrutmen" />
 
@@ -356,10 +358,10 @@ const getStatusConfig = (status) => {
                             </td>
                             <td class="px-6 py-4">
                                 <span class="px-3 py-1 rounded-full text-xs font-bold border"
-                                :class="getStatusConfig(applicant.status).color">
-                                {{ getStatusConfig(applicant.status).label }}
-                                 </span>
-                             </td>
+                                    :class="getStatusConfig(applicant.status).color">
+                                    {{ getStatusConfig(applicant.status).label }}
+                                </span>
+                            </td>
                             <td class="px-6 py-4 text-slate-600 text-xs">
                                 {{ applicant.notes || '-' }}
                             </td>
@@ -594,7 +596,7 @@ const getStatusConfig = (status) => {
                                         <div class="font-medium text-slate-900 text-sm group-hover:text-primary">
                                             Portfolio</div>
                                         <div class="text-xs text-slate-500 truncate">{{ selectedApplicant.portfolio_url
-                                            }}</div>
+                                        }}</div>
                                     </div>
                                 </a>
                             </div>
